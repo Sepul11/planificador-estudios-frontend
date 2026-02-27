@@ -10,7 +10,7 @@ function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/hoy" element={<Hoy />} />
         <Route path="/crear" element={<CrearActividad />} />
