@@ -4,7 +4,7 @@ function PruebaCrearActividad() {
   const [titulo, setTitulo] = useState("");
   const [actividades, setActividades] = useState([]);
 
-  const API_URL = "http://127.0.0.1:8000/actividades/";
+  const API_URL = "https://planificador-estudios-backend-80p8.onrender.com/actividades/";
 
   // 🔹 GET
   const obtenerActividades = async () => {

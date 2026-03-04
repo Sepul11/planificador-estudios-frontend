@@ -3,7 +3,7 @@ import Hoy from "../pages/Hoy";
 import CrearActividad from "../pages/CrearActividad";
 import Login from "../pages/Login";
 import Menu from "../pages/Menu";
-import PruebaCrearActividad from "./PruebaCrearActividad";
+import PruebaCrearActividad from "../pages/PruebaCrearActividad";
 
 
 
