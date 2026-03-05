@@ -64,6 +64,10 @@ function CrearActividad() {
         }
       );
 
+      const data = await response.json();
+      console.log("STATUS:", response.status);
+      console.log("DATA:", data);
+
       if (!response.ok) {
         throw new Error("Error al crear actividad");
       }
