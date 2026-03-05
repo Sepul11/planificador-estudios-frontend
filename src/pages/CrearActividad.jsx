@@ -36,16 +36,44 @@ function CrearActividad() {
     setSubtareas(subtareas.filter((s) => s.id !== id));
   }
 
-  function guardarActividad() {
-    console.log({
+  async function guardarActividad() {
+    if (!titulo || !fecha || !horaInicio || !horaFin) {
+      alert("Completa todos los campos principales");
+      return;
+    }
+    const actividadData = {
       titulo,
       fecha,
-      horaInicio,
-      horaFin,
-      subtareas,
-    });
+      hora_inicio: horaInicio + ":00",
+      hora_fin: horaFin + ":00",
+      subtareas: subtareas.map((s) => ({
+        titulo: s.titulo,
+        fecha: s.fecha,
+        horas: parseInt(s.horas),
+      })),
+    };
+    try {
+      const response = await fetch(
+        "https://planificador-estudios-backend-80p8.onrender.com/actividades/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(actividadData),
+        }
+      );
 
-    navigate("/hoy");
+      if (!response.ok) {
+        throw new Error("Error al crear actividad");
+      }
+
+      navigate("/hoy");
+    } catch (error) {
+      alert("Error conectando con el servidor");
+      console.error(error);
+    }
+
   }
 
   return (
