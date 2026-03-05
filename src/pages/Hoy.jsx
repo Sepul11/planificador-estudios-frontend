@@ -1,14 +1,38 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 function Hoy() {
   const navigate = useNavigate();
+  const [actividades, setActividades] = useState([]);
+  useEffect(() => {
+      fetch("https://planificador-estudios-backend-80p8.onrender.com/actividades/")
+        .then((res) => res.json())
+        .then((data) => {
+          setActividades(data);
+          console.log(data);
+        })
+        .catch((error) => console.error("Error:", error));
+    }, []);
+
+    const hoy = new Date().toISOString().split("T")[0];
+    const vencidas = actividades.filter(
+      (a) => a.fecha < hoy
+    );
+
+    const paraHoy = actividades.filter(
+      (a) => a.fecha === hoy
+    );
+
+    const proximas = actividades.filter(
+      (a) => a.fecha > hoy
+    );
 
   return (
     <div style={container}>
       {/* Header */}
       <header style={header}>
         <h1>Hoy</h1>
-        <p style={date}>Miércoles, 25 de febrero</p>
+        <p style={date}>Actividades del Dia</p>
       </header>
 
       {/* Alerta de sobrecarga */}
@@ -20,49 +44,48 @@ function Hoy() {
       <section style={section}>
         <h2 style={sectionTitle}>🔴 Vencidas</h2>
 
-        <div style={card}>
-          <div>
-            <h3>Parcial de Física</h3>
-            <p style={time}>Debía entregarse ayer</p>
+        {vencidas.map((actividad) => (
+          <div key={actividad.id} style={card}>
+            <div>
+              <h3>{actividad.titulo}</h3>
+              <p style={time}>{actividad.fecha}</p>
+            </div>
+            <button style={action}>Ir a resolver</button>
           </div>
-          <button style={action}>Ir a resolver</button>
-        </div>
+        ))}
       </section>
 
       {/* HOY */}
       <section style={section}>
         <h2 style={sectionTitle}>🟠 Para hoy</h2>
 
-        <div style={card}>
-          <div>
-            <h3>Estudiar matemáticas</h3>
-            <p style={time}>08:00 - 10:00</p>
+        {paraHoy.map((actividad) => (
+          <div key={actividad.id} style={card}>
+            <div>
+              <h3>{actividad.titulo}</h3>
+              <p style={time}>
+                {actividad.hora_inicio} - {actividad.hora_fin}
+              </p>
+            </div>
+            <button style={action}>Ver</button>
           </div>
-          <button style={action}>Ir a resolver</button>
-        </div>
-
-        <div style={card}>
-          <div>
-            <h3>Proyecto integrador</h3>
-            <p style={time}>14:00 - 16:00</p>
-          </div>
-          <button style={action}>Ir a resolver</button>
-        </div>
+        ))}
       </section>
 
       {/* PRÓXIMAS */}
       <section style={section}>
         <h2 style={sectionTitle}>🟢 Próximas</h2>
 
-        <div style={card}>
-          <div>
-            <h3>Exposición de Historia</h3>
-            <p style={time}>Mañana</p>
+        {proximas.map((actividad) => (
+          <div key={actividad.id} style={card}>
+            <div>
+              <h3>{actividad.titulo}</h3>
+              <p style={time}>{actividad.fecha}</p>
+            </div>
+            <button style={action}>Ver</button>
           </div>
-          <button style={action}>Ver</button>
-        </div>
+        ))}
       </section>
-
       {/* Resumen */}
       <section style={summary}>
         ⏱️ <strong>Resumen del día:</strong> 4 horas estimadas
