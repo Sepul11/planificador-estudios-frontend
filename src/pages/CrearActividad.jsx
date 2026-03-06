@@ -16,8 +16,40 @@ function CrearActividad() {
   const [subFecha, setSubFecha] = useState("");
   const [subHoras, setSubHoras] = useState("");
 
+  //Errores
+  const [errores, setErrores] = useState({});
+  const [errorSub, setErrorSub] = useState("");
+  const [loading, setLoading] = useState(false);
+
   function agregarSubtarea() {
-    if (!subTitulo || !subHoras) return;
+    const duracionActividad = calcularDuracionActividad();
+
+    const totalSubtareas =
+      subtareas.reduce((total, s) => total + Number(s.horas), 0) +
+      Number(subHoras);
+
+    if (duracionActividad && totalSubtareas > duracionActividad) {
+      setErrorSub(
+        `Las subtareas superan la duración de la actividad (${duracionActividad}h)`
+      );
+      return;
+    }
+
+    if (!subTitulo.trim()) {
+      setErrorSub("La subtarea necesita un nombre");
+      return;
+    }
+
+    if (!subHoras || subHoras <= 0) {
+      setErrorSub("Las horas deben ser mayores a 0");
+      return;
+    }
+
+    if (subFecha && fecha && subFecha < fecha) {
+      setErrorSub("La subtarea no puede ser antes de la actividad");
+      return;
+    }
+
 
     const nueva = {
       id: Date.now(),
@@ -30,17 +62,62 @@ function CrearActividad() {
     setSubTitulo("");
     setSubFecha("");
     setSubHoras("");
+
+    setErrorSub("");
   }
 
   function eliminarSubtarea(id) {
     setSubtareas(subtareas.filter((s) => s.id !== id));
   }
 
+  function validarFormulario() {
+      const nuevosErrores = {};
+
+      if (!titulo.trim()) {
+        nuevosErrores.titulo = "El título es obligatorio";
+      } else if (titulo.length < 3) {
+        nuevosErrores.titulo = "Debe tener al menos 3 caracteres";
+      }
+
+      if (!fecha) {
+        nuevosErrores.fecha = "Selecciona una fecha";
+      }
+
+      if (!horaInicio) {
+        nuevosErrores.horaInicio = "Selecciona hora de inicio";
+      }
+
+      if (!horaFin) {
+        nuevosErrores.horaFin = "Selecciona hora de fin";
+      }
+
+      if (horaInicio && horaFin && horaInicio >= horaFin) {
+        nuevosErrores.horaFin = "La hora de fin debe ser mayor que la de inicio";
+      }
+
+      setErrores(nuevosErrores);
+
+      return Object.keys(nuevosErrores).length === 0;
+    }
+
+    function calcularDuracionActividad() {
+      if (!horaInicio || !horaFin) return null;
+
+      const [h1, m1] = horaInicio.split(":").map(Number);
+      const [h2, m2] = horaFin.split(":").map(Number);
+
+      const inicio = h1 * 60 + m1;
+      const fin = h2 * 60 + m2;
+
+      return (fin - inicio) / 60;
+    }
+
+
   async function guardarActividad() {
-    if (!titulo || !fecha || !horaInicio || !horaFin) {
-      alert("Completa todos los campos principales");
+    if (!validarFormulario()) {
       return;
     }
+
     const actividadData = {
       titulo,
       fecha,
@@ -53,6 +130,7 @@ function CrearActividad() {
       })),
     };
     try {
+      setLoading(true);
       const response = await fetch(
         "https://planificador-estudios-backend-80p8.onrender.com/actividades/",
         {
@@ -76,6 +154,8 @@ function CrearActividad() {
     } catch (error) {
       alert("Error conectando con el servidor");
       console.error(error);
+    }finally {
+      setLoading(false);
     }
 
   }
@@ -87,32 +167,47 @@ function CrearActividad() {
       <div style={card}>
         {/* Actividad */}
         <input
-          style={input}
+          style={{...input, border: errores.titulo ? "1px solid #ff6b6b" : input.border}}
           placeholder="Nombre de la actividad"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
         />
 
+        {errores.titulo && <span style={error}>{errores.titulo}</span>}
+
+        <div style={timeGroup}>
+        <label style={label}>Fecha</label>
         <input
-          style={input}
+          style={{...input, border: errores.fecha ? "1px solid #ff6b6b" : input.border}}
           type="date"
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
         />
+        </div>
+        {errores.fecha && <span style={error}>{errores.fecha}</span>}
 
         <div style={row}>
-          <input
-            style={input}
-            type="time"
-            value={horaInicio}
-            onChange={(e) => setHoraInicio(e.target.value)}
-          />
-          <input
-            style={input}
-            type="time"
-            value={horaFin}
-            onChange={(e) => setHoraFin(e.target.value)}
-          />
+          <div style={timeGroup}>
+            <label style={label}>Hora inicio</label>
+            <input
+              style={{...input, border: errores.horaInicio ? "1px solid #ff6b6b" : input.border}}
+              type="time"
+              value={horaInicio}
+              onChange={(e) => setHoraInicio(e.target.value)}
+            />
+            <div>{errores.horaInicio && <span style={error}>{errores.horaInicio}</span>}</div>
+          </div>
+
+          <div style={timeGroup}>
+            <label style={label}>Hora fin</label>
+            <input
+              style={{...input, border: errores.horaFin ? "1px solid #ff6b6b" : input.border}}
+              type="time"
+              value={horaFin}
+              onChange={(e) => setHoraFin(e.target.value)}
+            />
+            <div>{errores.horaFin && <span style={error}>{errores.horaFin}</span>}</div>
+          </div>
         </div>
 
         {/* Subtareas */}
@@ -120,28 +215,46 @@ function CrearActividad() {
 
         <div style={subRow}>
           <input
-            style={input}
+            style={{
+              ...input,
+              border: errorSub ? "1px solid #ff6b6b" : input.border
+            }}
             placeholder="Subtarea"
             value={subTitulo}
             onChange={(e) => setSubTitulo(e.target.value)}
           />
+          {errorSub.subTitulo && <span style={error}>{errorSub.subTitulo}</span>}
           <input
-            style={input}
+            style={{
+              ...input,
+              border: errorSub ? "1px solid #ff6b6b" : input.border
+            }}
             type="date"
             value={subFecha}
             onChange={(e) => setSubFecha(e.target.value)}
           />
+          {errorSub.subFecha && <span style={error}>{errorSub.subFecha}</span>}
           <input
-            style={input}
+            style={{
+              ...input,
+              border: errorSub ? "1px solid #ff6b6b" : input.border
+            }}
             type="number"
             placeholder="Horas"
+            min="1"
+            max="24"
             value={subHoras}
             onChange={(e) => setSubHoras(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") agregarSubtarea();
+            }}
           />
+          {errorSub.subFecha && <span style={error}>{errorSub.subFecha}</span>}
           <button style={addBtn} onClick={agregarSubtarea}>
-            +
+            ➕ Agregar
           </button>
         </div>
+        {errorSub && <span style={error}>{errorSub}</span>}
 
         {subtareas.map((s) => (
           <div key={s.id} style={subItem}>
@@ -149,13 +262,13 @@ function CrearActividad() {
               {s.titulo} · {s.fecha} · {s.horas}h
             </span>
             <button onClick={() => eliminarSubtarea(s.id)} style={removeBtn}>
-              ❌
+              ❌ Eliminar
             </button>
           </div>
         ))}
 
-        <button style={saveBtn} onClick={guardarActividad}>
-          Guardar actividad
+        <button style={saveBtn} disabled={loading} onClick={guardarActividad}>
+          {loading ? "Guardando..." : "Guardar actividad"}
         </button>
       </div>
     </div>
@@ -189,9 +302,11 @@ const card = {
 };
 
 const input = {
-  padding: "0.7rem",
+  padding: "0.75rem",
   borderRadius: "10px",
   border: "1px solid #D3AB80",
+  outline: "none",
+  fontSize: "0.95rem",
 };
 
 const row = {
@@ -214,9 +329,11 @@ const addBtn = {
   background: "#D3AB80",
   border: "none",
   borderRadius: "8px",
-  padding: "0 12px",
+  padding: "0 14px",
   cursor: "pointer",
-  fontSize: "1.2rem",
+  fontSize: "0.9rem",
+  fontWeight: "500",
+  whiteSpace: "nowrap"
 };
 
 const subItem = {
@@ -242,6 +359,24 @@ const saveBtn = {
   background: "#472825",
   color: "white",
   cursor: "pointer",
+};
+
+const error = {
+  color: "#ff6b6b",
+  fontSize: "0.8rem",
+  marginTop: "-0.6rem",
+};
+
+const timeGroup = {
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+};
+
+const label = {
+  fontSize: "0.8rem",
+  color: "#472825",
+  marginBottom: "3px",
 };
 
 export default CrearActividad;
