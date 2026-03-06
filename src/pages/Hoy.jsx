@@ -11,7 +11,12 @@ function Hoy() {
   const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
-    fetch("https://planificador-estudios-backend-80p8.onrender.com/actividades/")
+    const token = localStorage.getItem("token");
+    fetch(`https://planificador-estudios-backend-80p8.onrender.com/actividades/${id}/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    }})
       .then((res) => res.json())
       .then((data) => {
         setActividades(data);

@@ -141,6 +141,7 @@ function CrearActividad() {
       })),
     };
     try {
+      const token = localStorage.getItem("token");
       setLoading(true);
       const response = await fetch(
         "https://planificador-estudios-backend-80p8.onrender.com/actividades/",
@@ -148,6 +149,7 @@ function CrearActividad() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
           },
           body: JSON.stringify(actividadData),
         }

@@ -15,8 +15,13 @@ function Actividad() {
   const [snackbar, setSnackbar] = useState(mensajeInicial || "");
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
 
-    fetch(`https://planificador-estudios-backend-80p8.onrender.com/actividades/${id}/`)
+    fetch(`https://planificador-estudios-backend-80p8.onrender.com/actividades/${id}/`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Token ${token}`,
+    }})
       .then((res) => {
 
         if (!res.ok) {
