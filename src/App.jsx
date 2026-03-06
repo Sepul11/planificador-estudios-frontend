@@ -6,6 +6,7 @@ import Hoy from "./pages/Hoy";
 import Crear from "./pages/CrearActividad";
 import Login from "./pages/Login";
 import Actividad from "./pages/Actividad";
+import Register from "./pages/Register";
 
 function Layout() {
 
@@ -13,11 +14,12 @@ function Layout() {
 
   return (
     <>
-      {location.pathname !== "/login" && <Navbar />}
+      {location.pathname !== "/login" && location.pathname !== "/register" && <Navbar />}
 
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/hoy" element={<Hoy />} />
         <Route path="/crear" element={<Crear />} />
