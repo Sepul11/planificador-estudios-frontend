@@ -4,6 +4,7 @@ import { FaUserAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Register() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     nombre: "",
@@ -23,16 +24,53 @@ function Register() {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (form.password !== form.confirmPassword) {
-      alert("Las contraseñas no coinciden");
+    const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (form.password !== form.confirmPassword) {
+    alert("Las contraseñas no coinciden");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch(
+      "https://planificador-estudios-backend-80p8.onrender.com/auth/register/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: form.usuario,
+          password: form.password,
+          email: form.email,
+          first_name: form.nombre,
+          last_name: "",
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.error || "Error al registrar usuario");
       return;
     }
 
-    console.log("Registro:", form);
+    alert("Cuenta creada correctamente 🎉");
+
     navigate("/login");
-  };
+
+  } catch (error) {
+    console.error(error);
+    alert("Error conectando con el servidor");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div style={container}>
@@ -125,9 +163,9 @@ function Register() {
             )}
           </div>
 
-          <button style={button} type="submit">
-            Crear cuenta
-          </button>
+        <button style={button} type="submit" disabled={loading}>
+          {loading ? "Creando cuenta..." : "Crear cuenta"}
+        </button>
         </form>
 
         <p>
