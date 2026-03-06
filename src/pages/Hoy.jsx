@@ -146,7 +146,7 @@ function Hoy() {
 
       {/* FAB */}
       <button style={fab} onClick={() => navigate("/crear")}>
-        ➕ Agregar
+        ➕ 
       </button>
     </div>
   );

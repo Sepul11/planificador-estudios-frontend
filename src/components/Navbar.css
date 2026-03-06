@@ -1,0 +1,54 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 15px 40px;
+
+  background-color: #472825;
+}
+
+.logo {
+  color: #FFF4E2;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #FDE4BC;
+
+  padding: 8px 16px;
+  border-radius: 8px;
+
+  border: 2px solid transparent;
+
+  font-weight: 500;
+
+  transition: all 0.25s ease;
+}
+
+/* efecto cuando pasas el mouse */
+.nav-links a:hover {
+  border: 2px solid #D3AB80;
+  background-color: rgba(255, 244, 226, 0.1);
+  transform: translateY(-2px);
+}
+
+/* botón crear */
+.crear-btn {
+  background-color: #D3AB80;
+  color: #472825 !important;
+  font-weight: 600;
+}
+
+.crear-btn:hover {
+  background-color: #FDE4BC;
+  border: 2px solid #FDE4BC;
+}
