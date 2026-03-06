@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaUserAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa"; // react-icons
 
 function Login() {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div style={container}>
@@ -9,8 +12,33 @@ function Login() {
         <h1 style={title}>Planificador de Estudios</h1>
 
         <div style={form}>
-          <input style={input} placeholder="Usuario" />
-          <input style={input} type="password" placeholder="Contraseña" />
+          {/* Usuario */}
+          <div style={inputWrapper}>
+            <FaUserAlt style={icon} />
+            <input style={input} placeholder="Usuario" />
+          </div>
+
+          {/* Contraseña */}
+          <div style={inputWrapper}>
+            <FaLock style={icon} />
+            <input
+              style={input}
+              type={showPassword ? "text" : "password"}
+              placeholder="Contraseña"
+            />
+            {showPassword ? (
+              <FaEyeSlash
+                style={eyeIcon}
+                onClick={() => setShowPassword(false)}
+              />
+            ) : (
+              <FaEye style={eyeIcon} onClick={() => setShowPassword(true)} />
+            )}
+          </div>
+
+          <p>
+            ¿No tienes cuenta? <a href="/register">Regístrate</a>
+          </p>
 
           <button style={button} onClick={() => navigate("/menu")}>
             Iniciar sesión
@@ -56,13 +84,37 @@ const title = {
 const form = {
   display: "flex",
   flexDirection: "column",
-  alignItems: "center", // 🔥 CLAVE
+  alignItems: "center",
   gap: "1rem",
 };
 
-const input = {
-  padding: "0.75rem",
+const inputWrapper = {
+  position: "relative",
   width: "260px",
+};
+
+const icon = {
+  position: "absolute",
+  left: "10px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  color: colors.medium,
+};
+
+const eyeIcon = {
+  position: "absolute",
+  right: "10px",
+  top: "50%",
+  transform: "translateY(-50%)",
+  color: colors.medium,
+  cursor: "pointer",
+};
+
+const input = {
+  padding: "0.75rem 2.5rem", 
+  width: "100%",             
+  maxWidth: "260px",         
+  boxSizing: "border-box",   
   borderRadius: "10px",
   border: `1px solid ${colors.light}`,
   fontSize: "0.95rem",
