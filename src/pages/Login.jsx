@@ -5,7 +5,38 @@ import { FaUserAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa"; // react-
 function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
+  const handleLogin = async () => {
+  try {
+    const response = await fetch("https://planificador-estudios-backend-80p8.onrender.com/auth/login/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log("Login exitoso", data);
+
+      // guardar token si usas JWT
+      localStorage.setItem("token", data.token);
+
+      navigate("/menu");
+    } else {
+      alert("Credenciales incorrectas");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
   return (
     <div style={container}>
       <div style={card}>
@@ -15,7 +46,12 @@ function Login() {
           {/* Usuario */}
           <div style={inputWrapper}>
             <FaUserAlt style={icon} />
-            <input style={input} placeholder="Usuario" />
+            <input
+              style={input}
+              placeholder="Usuario"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
 
           {/* Contraseña */}
@@ -25,6 +61,8 @@ function Login() {
               style={input}
               type={showPassword ? "text" : "password"}
               placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
             {showPassword ? (
               <FaEyeSlash
@@ -40,9 +78,9 @@ function Login() {
             ¿No tienes cuenta? <a href="/register">Regístrate</a>
           </p>
 
-          <button style={button} onClick={() => navigate("/menu")}>
-            Iniciar sesión
-          </button>
+        <button style={button} onClick={handleLogin}>
+          Iniciar sesión
+        </button>
         </div>
       </div>
     </div>
