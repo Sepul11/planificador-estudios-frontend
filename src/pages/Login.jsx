@@ -1,48 +1,76 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUserAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa"; // react-icons
+import { FaUserAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import toast, { Toaster } from "react-hot-toast";
 
 function Login() {
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-  try {
-    const response = await fetch("https://planificador-estudios-backend-80p8.onrender.com/auth/login/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: username,
-        password: password,
-      }),
-    });
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-    const data = await response.json();
+    // validación
+    if (!username || !password) {
+      toast.error("Debes completar todos los campos");
+      return;
+    }
 
-    if (response.ok) {
-      console.log("Login exitoso", data);
+    setLoading(true);
 
-      // guardar token si usas JWT
+    try {
+      const response = await fetch(
+        "https://planificador-estudios-backend-80p8.onrender.com/auth/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Error al iniciar sesión");
+        setLoading(false);
+        return;
+      }
+
+      // guardar token
       localStorage.setItem("token", data.token);
 
-      navigate("/menu");
-    } else {
-      alert("Credenciales incorrectas");
+      toast.success("Inicio de sesión exitoso");
+
+      setTimeout(() => {
+        navigate("/menu");
+      }, 1200);
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Error de conexión con el servidor");
     }
-  } catch (error) {
-    console.error("Error:", error);
-  }
-};
+
+    setLoading(false);
+  };
+
   return (
     <div style={container}>
+      <Toaster position="top-center" />
+
       <div style={card}>
         <h1 style={title}>Planificador de Estudios</h1>
 
-        <div style={form}>
+        <form style={form} onSubmit={handleLogin}>
+          
           {/* Usuario */}
           <div style={inputWrapper}>
             <FaUserAlt style={icon} />
@@ -64,13 +92,17 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+
             {showPassword ? (
               <FaEyeSlash
                 style={eyeIcon}
                 onClick={() => setShowPassword(false)}
               />
             ) : (
-              <FaEye style={eyeIcon} onClick={() => setShowPassword(true)} />
+              <FaEye
+                style={eyeIcon}
+                onClick={() => setShowPassword(true)}
+              />
             )}
           </div>
 
@@ -78,10 +110,11 @@ function Login() {
             ¿No tienes cuenta? <a href="/register">Regístrate</a>
           </p>
 
-        <button style={button} onClick={handleLogin}>
-          Iniciar sesión
-        </button>
-        </div>
+          <button style={button} disabled={loading}>
+            {loading ? "Ingresando..." : "Iniciar sesión"}
+          </button>
+
+        </form>
       </div>
     </div>
   );
