@@ -5,6 +5,7 @@ import Menu from "./pages/Menu";
 import Hoy from "./pages/Hoy";
 import Crear from "./pages/CrearActividad";
 import Login from "./pages/Login";
+import Actividad from "./pages/Actividad";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/hoy" element={<Hoy />} />
         <Route path="/crear" element={<Crear />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/actividad/:id" element={<Actividad />} />
       </Routes>
     </BrowserRouter>
   );
