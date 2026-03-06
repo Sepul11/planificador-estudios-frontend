@@ -51,7 +51,7 @@ function Login() {
       toast.success("Inicio de sesión exitoso");
 
       setTimeout(() => {
-        navigate("/menu");
+        window.location.href = "/menu";
       }, 1200);
 
     } catch (error) {
