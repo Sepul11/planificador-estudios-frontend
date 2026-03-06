@@ -8,6 +8,7 @@ function Hoy() {
   const [filtro, setFiltro] = useState("todas");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
     fetch("https://planificador-estudios-backend-80p8.onrender.com/actividades/")
@@ -23,54 +24,55 @@ function Hoy() {
       });
   }, []);
 
-  // Fecha de hoy (local)
-  const hoy = new Date();
-  hoy.setHours(0,0,0,0);
+    // Fecha de hoy
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
 
-  // Clasificación de actividades
-  const vencidas = [];
-  const paraHoy = [];
-  const proximas = [];
+    // FILTRO DE BÚSQUEDA
+    const actividadesFiltradas = actividades.filter((a) => {
+      const texto = busqueda.toLowerCase();
 
-  actividades.forEach((a) => {
-    if (!a.fecha) return;
+      return (
+        a.titulo?.toLowerCase().includes(texto) ||
+        a.curso?.toLowerCase().includes(texto)
+      );
+    });
 
-    const fechaActividad = new Date(a.fecha);
-    fechaActividad.setHours(0,0,0,0);
+    // CLASIFICACIÓN
+    const vencidas = [];
+    const paraHoy = [];
+    const proximas = [];
 
-    if (fechaActividad < hoy) {
-      vencidas.push(a);
-    } else if (fechaActividad.getTime() === hoy.getTime()) {
-      paraHoy.push(a);
-    } else {
-      proximas.push(a);
-    }
-  });
+    actividadesFiltradas.forEach((a) => {
 
-  // Cálculo horas del día
-  const horasHoy = paraHoy.reduce((total, a) => {
+      if (!a.fecha) return;
 
-    if (!a.hora_inicio || !a.hora_fin) return total;
+      const fechaActividad = new Date(a.fecha);
+      fechaActividad.setHours(0,0,0,0);
 
-    const inicio = Number(a.hora_inicio.split(":")[0]);
-    const fin = Number(a.hora_fin.split(":")[0]);
+      if (fechaActividad < hoy) {
+        vencidas.push(a);
+      } 
+      else if (fechaActividad.getTime() === hoy.getTime()) {
+        paraHoy.push(a);
+      } 
+      else {
+        proximas.push(a);
+      }
 
-    return total + (fin - inicio);
+    });
 
-  }, 0);
+    // CÁLCULO DE HORAS
+    const horasHoy = paraHoy.reduce((total, a) => {
 
-  if (loading) {
-    return (
-      <div style={loadingContainer}>
-        <div style={spinner}></div>
-        <p>Cargando actividades...</p>
-      </div>
-    );
-  }
+      if (!a.hora_inicio || !a.hora_fin) return total;
 
-  if (error) {
-    return <p style={{padding:"20px"}}>{error}</p>;
-  }
+      const inicio = Number(a.hora_inicio.split(":")[0]);
+      const fin = Number(a.hora_fin.split(":")[0]);
+
+      return total + (fin - inicio);
+
+    }, 0);
 
   return (
     <div style={container}>
@@ -120,6 +122,14 @@ function Hoy() {
           🟢 Próximas
         </button>
 
+        <input
+        type="text"
+        placeholder="Buscar por título o curso..."
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        style={searchInput}
+      />
+
       </div>
 
       {(filtro === "todas" || filtro === "vencidas") && vencidas.length > 0 && (
@@ -130,6 +140,7 @@ function Hoy() {
             <div key={actividad.id} style={card}>
               <div>
                 <h3>{actividad.titulo}</h3>
+                <p>{actividad.curso}</p>
                 <p style={time}>{actividad.fecha}</p>
               </div>
               <button style={action}
@@ -149,6 +160,7 @@ function Hoy() {
             <div key={actividad.id} style={card}>
               <div>
                 <h3>{actividad.titulo}</h3>
+                <p>{actividad.curso}</p>
                 <p style={time}>
                   {actividad.hora_inicio} - {actividad.hora_fin}
                 </p>
@@ -177,6 +189,7 @@ function Hoy() {
             <div key={actividad.id} style={card}>
               <div>
                 <h3>{actividad.titulo}</h3>
+                <p>{actividad.curso}</p>
                 <p style={time}>{actividad.fecha}</p>
               </div>
               <button
@@ -190,6 +203,14 @@ function Hoy() {
 
         </section>
       )}
+      {busqueda && 
+        vencidas.length === 0 && 
+        paraHoy.length === 0 && 
+        proximas.length === 0 && (
+          <p style={empty}>
+            No se encontraron actividades 🔎
+          </p>
+        )}
 
       <button style={fab} onClick={() => navigate("/crear")}>
         ➕
@@ -340,6 +361,16 @@ const spinner = {
   borderTop: "4px solid #472825",
   borderRadius: "50%",
   animation: "spin 1s linear infinite",
+};
+
+const searchInput = {
+  width: "100%",
+  padding: "0.7rem 1rem",
+  borderRadius: "10px",
+  border: "1px solid #ddd",
+  marginBottom: "1rem",
+  fontSize: "0.9rem",
+  outline: "none"
 };
 
 export default Hoy;
