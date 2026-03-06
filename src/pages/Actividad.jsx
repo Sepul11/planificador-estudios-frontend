@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 function Actividad() {
 
@@ -8,6 +9,10 @@ function Actividad() {
 
   const [actividad, setActividad] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
+  const mensajeInicial = location.state?.mensaje;
+  const [snackbar, setSnackbar] = useState(mensajeInicial || "");
 
   useEffect(() => {
 
@@ -32,6 +37,16 @@ function Actividad() {
       });
 
   }, [id]);
+
+  useEffect(() => {
+  if (snackbar) {
+    const timer = setTimeout(() => {
+      setSnackbar("");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }
+}, [snackbar]);
 
   if (loading) {
     return (
@@ -85,8 +100,13 @@ function Actividad() {
         </p>
 
       </div>
-
+      {snackbar && (
+        <div style={snackbarStyle}>
+          {snackbar}
+        </div>
+      )}
     </div>
+    
   );
 }
 
@@ -143,4 +163,18 @@ const empty = {
   color: "#888"
 };
 
+const snackbarStyle = {
+  position: "fixed",
+  bottom: "20px",
+  left: "50%",
+  transform: "translateX(-50%)",
+  background: "#472825",
+  color: "white",
+  padding: "0.8rem 1.4rem",
+  borderRadius: "8px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+  animation: "fadeIn 0.3s ease"
+};
+
 export default Actividad;
+

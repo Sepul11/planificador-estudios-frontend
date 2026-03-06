@@ -159,9 +159,12 @@ function CrearActividad() {
 
       if (!response.ok) {
         throw new Error("Error al crear actividad");
+
       }
 
-      navigate("/hoy");
+      navigate(`/actividad/${data.id}`, {
+        state: { mensaje: "Actividad creada con éxito ✅" }
+      });
     } catch (error) {
       alert("Error conectando con el servidor");
       console.error(error);
@@ -169,6 +172,14 @@ function CrearActividad() {
       setLoading(false);
     }
 
+  }
+  if (loading) {
+    return (
+      <div style={loadingContainer}>
+        <div style={spinner}></div>
+        <p>Creando Actividad...</p>
+      </div>
+    );
   }
 
   return (
@@ -316,6 +327,7 @@ function CrearActividad() {
         <button style={saveBtn} disabled={loading} onClick={guardarActividad}>
           {loading ? "Guardando..." : "Guardar actividad"}
         </button>
+        
       </div>
     </div>
   );
@@ -429,6 +441,24 @@ const fieldColumn = {
   display: "flex",
   flexDirection: "column",
   gap: "2px"
+};
+
+const loadingContainer = {
+  height: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  color: "#472825",
+};
+
+const spinner = {
+  width: "40px",
+  height: "40px",
+  border: "4px solid #D3AB80",
+  borderTop: "4px solid #472825",
+  borderRadius: "50%",
+  animation: "spin 1s linear infinite",
 };
 
 export default CrearActividad;

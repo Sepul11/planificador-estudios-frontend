@@ -132,7 +132,9 @@ function Hoy() {
                 <h3>{actividad.titulo}</h3>
                 <p style={time}>{actividad.fecha}</p>
               </div>
-              <button style={action}>Ir a resolver</button>
+              <button style={action}
+              onClick={() => navigate(`/actividad/${actividad.id}`)}
+              >Ir a resolver</button>
             </div>
           ))}
 
