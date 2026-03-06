@@ -6,6 +6,8 @@ function CrearActividad() {
 
   // Actividad
   const [titulo, setTitulo] = useState("");
+  const [curso, setCurso] = useState("");
+  const [descripcion, setDescripcion] = useState("");
   const [fecha, setFecha] = useState("");
   const [horaInicio, setHoraInicio] = useState("");
   const [horaFin, setHoraFin] = useState("");
@@ -18,38 +20,38 @@ function CrearActividad() {
 
   //Errores
   const [errores, setErrores] = useState({});
-  const [errorSub, setErrorSub] = useState("");
+  const [errorSub, setErrorSub] = useState({});
   const [loading, setLoading] = useState(false);
 
   function agregarSubtarea() {
+
+    const erroresSub = {};
+
     const duracionActividad = calcularDuracionActividad();
 
     const totalSubtareas =
       subtareas.reduce((total, s) => total + Number(s.horas), 0) +
       Number(subHoras);
 
-    if (duracionActividad && totalSubtareas > duracionActividad) {
-      setErrorSub(
-        `Las subtareas superan la duración de la actividad (${duracionActividad}h)`
-      );
-      return;
-    }
-
     if (!subTitulo.trim()) {
-      setErrorSub("La subtarea necesita un nombre");
-      return;
+      erroresSub.subTitulo = "La subtarea necesita un nombre";
     }
-
     if (!subHoras || subHoras <= 0) {
-      setErrorSub("Las horas deben ser mayores a 0");
-      return;
+      erroresSub.subHoras = "Las horas deben ser mayores a 0";
     }
 
     if (subFecha && fecha && subFecha < fecha) {
-      setErrorSub("La subtarea no puede ser antes de la actividad");
-      return;
+      erroresSub.subFecha = "No puede ser antes de la actividad";
     }
 
+    if (duracionActividad && totalSubtareas > duracionActividad) {
+      erroresSub.subHoras = `Supera duración actividad (${duracionActividad}h)`;
+    }
+
+    if (Object.keys(erroresSub).length > 0) {
+      setErrorSub(erroresSub);
+      return;
+    }
 
     const nueva = {
       id: Date.now(),
@@ -59,11 +61,12 @@ function CrearActividad() {
     };
 
     setSubtareas([...subtareas, nueva]);
+
     setSubTitulo("");
     setSubFecha("");
     setSubHoras("");
 
-    setErrorSub("");
+    setErrorSub({});
   }
 
   function eliminarSubtarea(id) {
@@ -117,9 +120,17 @@ function CrearActividad() {
     if (!validarFormulario()) {
       return;
     }
+    if (subTitulo || subFecha || subHoras) {
+      setErrorSub({
+        subTitulo: "Debes agregar la subtarea antes de guardar"
+      });
+      return;
+    }
 
     const actividadData = {
       titulo,
+      curso,
+      descripcion,
       fecha,
       hora_inicio: horaInicio + ":00",
       hora_fin: horaFin + ":00",
@@ -172,8 +183,22 @@ function CrearActividad() {
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
         />
-
         {errores.titulo && <span style={error}>{errores.titulo}</span>}
+
+        <input
+          style={input}
+          placeholder="Curso"
+          value={curso}
+          onChange={(e) => setCurso(e.target.value)}
+        />
+
+        <textarea
+          style={{...input, minHeight: "80px", resize: "vertical"}}
+          placeholder="Descripción de la actividad"
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+        />
+
 
         <div style={timeGroup}>
         <label style={label}>Fecha</label>
@@ -213,48 +238,69 @@ function CrearActividad() {
         {/* Subtareas */}
         <h3 style={sectionTitle}>Divide tu trabajo en subtareas</h3>
 
-        <div style={subRow}>
-          <input
-            style={{
-              ...input,
-              border: errorSub ? "1px solid #ff6b6b" : input.border
-            }}
-            placeholder="Subtarea"
-            value={subTitulo}
-            onChange={(e) => setSubTitulo(e.target.value)}
-          />
-          {errorSub.subTitulo && <span style={error}>{errorSub.subTitulo}</span>}
-          <input
-            style={{
-              ...input,
-              border: errorSub ? "1px solid #ff6b6b" : input.border
-            }}
-            type="date"
-            value={subFecha}
-            onChange={(e) => setSubFecha(e.target.value)}
-          />
-          {errorSub.subFecha && <span style={error}>{errorSub.subFecha}</span>}
-          <input
-            style={{
-              ...input,
-              border: errorSub ? "1px solid #ff6b6b" : input.border
-            }}
-            type="number"
-            placeholder="Horas"
-            min="1"
-            max="24"
-            value={subHoras}
-            onChange={(e) => setSubHoras(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") agregarSubtarea();
-            }}
-          />
-          {errorSub.subFecha && <span style={error}>{errorSub.subFecha}</span>}
-          <button style={addBtn} onClick={agregarSubtarea}>
-            ➕ Agregar
-          </button>
-        </div>
-        {errorSub && <span style={error}>{errorSub}</span>}
+       <div style={subRow}>
+
+      <div style={fieldColumn}>
+        <input
+          style={{
+            ...input,
+            border: errorSub.subTitulo ? "1px solid #ff6b6b" : input.border
+          }}
+          placeholder="Subtarea"
+          value={subTitulo}
+          onChange={(e) => {
+            setSubTitulo(e.target.value);
+            setErrorSub({ ...errorSub, subTitulo: null });
+          }}
+        />
+        <div>{errorSub.subTitulo && <span style={error}>{errorSub.subTitulo}</span>}</div>
+      </div>
+      
+
+      <div style={fieldColumn}>
+        <input
+          style={{
+            ...input,
+            border: errorSub.subFecha ? "1px solid #ff6b6b" : input.border
+          }}
+          type="date"
+          value={subFecha}
+          onChange={(e) => {
+            setSubFecha(e.target.value);
+            setErrorSub({ ...errorSub, subFecha: null });
+          }}
+        />
+        <div>{errorSub.subFecha && <span style={error}>{errorSub.subFecha}</span>}</div>
+      </div>
+      
+
+      <div style={fieldColumn}>
+        <input
+          style={{
+            ...input,
+            border: errorSub.subHoras ? "1px solid #ff6b6b" : input.border
+          }}
+          type="number"
+          placeholder="Horas"
+          min="1"
+          max="24"
+          value={subHoras}
+          onChange={(e) => {
+            setSubHoras(e.target.value);
+            setErrorSub({ ...errorSub, subHoras: null });
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") agregarSubtarea();
+          }}
+        />
+        <div>{errorSub.subHoras && <span style={error}>{errorSub.subHoras}</span>}</div>
+      </div>
+      
+      <button style={addBtn} onClick={agregarSubtarea}>
+        ➕
+      </button>
+
+    </div>
 
         {subtareas.map((s) => (
           <div key={s.id} style={subItem}>
@@ -377,6 +423,12 @@ const label = {
   fontSize: "0.8rem",
   color: "#472825",
   marginBottom: "3px",
+};
+
+const fieldColumn = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "2px"
 };
 
 export default CrearActividad;

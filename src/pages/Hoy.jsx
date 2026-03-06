@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 function Hoy() {
   const navigate = useNavigate();
   const [actividades, setActividades] = useState([]);
+  const [filtro, setFiltro] = useState("todas");
   useEffect(() => {
       fetch("https://planificador-estudios-backend-80p8.onrender.com/actividades/")
         .then((res) => res.json())
@@ -27,6 +28,15 @@ function Hoy() {
       (a) => a.fecha > hoy
     );
 
+    const horasHoy = paraHoy.reduce((total, a) => {
+      const inicio = a.hora_inicio?.split(":")[0];
+      const fin = a.hora_fin?.split(":")[0];
+
+      if (!inicio || !fin) return total;
+
+      return total + (Number(fin) - Number(inicio));
+    }, 0);
+
   return (
     <div style={container}>
       {/* Header */}
@@ -34,14 +44,53 @@ function Hoy() {
         <h1>Hoy</h1>
         <p style={date}>Actividades del Dia</p>
       </header>
+      
 
       {/* Alerta de sobrecarga */}
-      <div style={alert}>
-        ⚠️ Tienes varias tareas críticas hoy. Prioriza las vencidas.
-      </div>
+      {vencidas.length > 0 && (
+        <div style={alert}>
+          ⚠️ Tienes {vencidas.length} tareas vencidas. Priorízalas.
+        </div>
+      )}
+
+      <section style={summary}>
+        ⏱️ <strong>Resumen del día:</strong> {horasHoy} horas planificadas
+      </section>
+
+      <div style={filters}>
+      <button
+        style={filtro === "todas" ? filterActive : filterBtn}
+        onClick={() => setFiltro("todas")}
+      >
+        Todas
+      </button>
+
+      <button
+        style={filtro === "vencidas" ? filterActive : filterBtn}
+        onClick={() => setFiltro("vencidas")}
+      >
+        🔴 Vencidas
+      </button>
+
+      <button
+        style={filtro === "hoy" ? filterActive : filterBtn}
+        onClick={() => setFiltro("hoy")}
+      >
+        🟠 Hoy
+      </button>
+
+      <button
+        style={filtro === "proximas" ? filterActive : filterBtn}
+        onClick={() => setFiltro("proximas")}
+      >
+        🟢 Próximas
+      </button>
+    </div>
 
       {/* VENCIDAS */}
+      {(filtro === "todas" || filtro === "vencidas") && (
       <section style={section}>
+        
         <h2 style={sectionTitle}>🔴 Vencidas</h2>
 
         {vencidas.map((actividad) => (
@@ -53,9 +102,10 @@ function Hoy() {
             <button style={action}>Ir a resolver</button>
           </div>
         ))}
-      </section>
+      </section>)}
 
       {/* HOY */}
+      {(filtro === "todas" || filtro === "hoy") && (
       <section style={section}>
         <h2 style={sectionTitle}>🟠 Para hoy</h2>
 
@@ -70,10 +120,17 @@ function Hoy() {
             <button style={action}>Ver</button>
           </div>
         ))}
-      </section>
+      </section>)}
+
+      {filtro === "hoy" && paraHoy.length === 0 && (
+        <p style={empty}>
+          No tienes actividades para hoy 🎉
+        </p>
+      )}
 
       {/* PRÓXIMAS */}
-      <section style={section}>
+      {(filtro === "todas" || filtro === "proximas") && (
+        <section style={section}>
         <h2 style={sectionTitle}>🟢 Próximas</h2>
 
         {proximas.map((actividad) => (
@@ -85,11 +142,7 @@ function Hoy() {
             <button style={action}>Ver</button>
           </div>
         ))}
-      </section>
-      {/* Resumen */}
-      <section style={summary}>
-        ⏱️ <strong>Resumen del día:</strong> 4 horas estimadas
-      </section>
+      </section>)}
 
       {/* FAB */}
       <button style={fab} onClick={() => navigate("/crear")}>
@@ -158,20 +211,43 @@ const action = {
   cursor: "pointer",
 };
 
-const actionSecondary = {
-  background: "#e0e0e0",
-  color: "#333",
-  border: "none",
-  borderRadius: "8px",
-  padding: "0.6rem 1rem",
+const filters = {
+  display: "flex",
+  gap: "0.6rem",
+  marginBottom: "1.5rem",
+  flexWrap: "wrap"
+};
+
+const filterBtn = {
+  background: "#FFFFFF",
+  border: "1px solid #D3AB80",
+  borderRadius: "20px",
+  padding: "0.4rem 0.9rem",
   cursor: "pointer",
 };
 
-const summary = {
-  background: "#e7f1ff",
-  padding: "1rem",
-  borderRadius: "10px",
-  marginBottom: "4rem",
+const filterActive = {
+  background: "#472825",
+  color: "white",
+  border: "none",
+  borderRadius: "20px",
+  padding: "0.4rem 0.9rem",
+  cursor: "pointer",
+};
+
+const cardTitle = {
+  margin: 0,
+  fontSize: "1.1rem",
+};
+
+const course = {
+  fontSize: "0.8rem",
+  color: "#96786F",
+};
+
+const subInfo = {
+  fontSize: "0.75rem",
+  color: "#888",
 };
 
 const fab = {
@@ -186,6 +262,12 @@ const fab = {
   color: "#FFF4E2",
   fontSize: "1.5rem",
   cursor: "pointer",
+};
+
+const empty = {
+  color: "#777",
+  textAlign: "center",
+  marginTop: "1rem"
 };
 
 export default Hoy;
