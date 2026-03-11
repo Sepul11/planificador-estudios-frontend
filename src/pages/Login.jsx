@@ -62,6 +62,16 @@ function Login() {
     setLoading(false);
   };
 
+    if (loading) {
+    return (
+      <div style={loadingContainer}>
+        <div style={spinner}></div>
+        <p>Iniciando Sesion...</p>
+      </div>
+    );
+  }
+
+
   return (
     <div style={container}>
       <Toaster position="top-center" />
@@ -202,6 +212,24 @@ const button = {
   fontSize: "1rem",
   fontWeight: "600",
   cursor: "pointer",
+};
+
+const loadingContainer = {
+  height: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  color: "#472825",
+};
+
+const spinner = {
+  width: "40px",
+  height: "40px",
+  border: "4px solid #D3AB80",
+  borderTop: "4px solid #472825",
+  borderRadius: "50%",
+  animation: "spin 1s linear infinite",
 };
 
 export default Login;
