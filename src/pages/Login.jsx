@@ -11,65 +11,53 @@ function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+ const handleLogin = async (e) => {
+      e.preventDefault();
 
-    // validación
-    if (!username || !password) {
-      toast.error("Debes completar todos los campos");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await fetch(
-        "https://planificador-estudios-backend-80p8.onrender.com/auth/login/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username,
-            password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(data.error || "Error al iniciar sesión");
-        setLoading(false);
+      if (!username || !password) {
+        toast.error("Debes completar todos los campos");
         return;
       }
 
-      // guardar token
-      localStorage.setItem("token", data.token);
+      setLoading(true);
 
-      toast.success("Inicio de sesión exitoso");
+      try {
+        const response = await fetch(
+          "https://planificador-estudios-backend-80p8.onrender.com/auth/login/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username,
+              password,
+            }),
+          }
+        );
 
-      setTimeout(() => {
-        navigate("/menu");
-      }, 1200);
+        const data = await response.json();
 
-    } catch (error) {
-      console.error(error);
-      toast.error("Error de conexión con el servidor");
-    }
+        if (!response.ok) {
+          toast.error(data.error || "Error al iniciar sesión");
+          return;
+        }
 
-    setLoading(false);
-  };
+        localStorage.setItem("token", data.token);
 
-    if (loading) {
-    return (
-      <div style={loadingContainer}>
-        <div style={spinner}></div>
-        <p>Iniciando Sesion...</p>
-      </div>
-    );
-  }
+        toast.success("Inicio de sesión exitoso");
+
+        setTimeout(() => {
+          navigate("/menu");
+        }, 1200);
+
+      } catch (error) {
+        console.error(error);
+        toast.error("Error de conexión con el servidor");
+      } finally {
+        setLoading(false);
+      }
+    };
 
 
   return (
@@ -121,7 +109,11 @@ function Login() {
           </p>
 
           <button style={button} disabled={loading}>
-            {loading ? "Ingresando..." : "Iniciar sesión"}
+            {loading ? (
+              <div style={{ ...spinner}}></div>
+            ) : (
+              "Iniciar sesión"
+            )}
           </button>
 
         </form>
@@ -214,18 +206,9 @@ const button = {
   cursor: "pointer",
 };
 
-const loadingContainer = {
-  height: "100vh",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "center",
-  color: "#472825",
-};
-
 const spinner = {
-  width: "40px",
-  height: "40px",
+  width: "20px",
+  height: "20px",
   border: "4px solid #D3AB80",
   borderTop: "4px solid #472825",
   borderRadius: "50%",
