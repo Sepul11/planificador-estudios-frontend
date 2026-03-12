@@ -110,7 +110,7 @@ function Login() {
 
           <button style={button} disabled={loading}>
             {loading ? (
-              <div style={{ ...spinner}}></div>
+              <div style={{ ...spinner, width: "20px", height: "20px", borderWidth: "3px" }}></div>
             ) : (
               "Iniciar sesión"
             )}
