@@ -136,27 +136,6 @@ function Hoy() {
       />
 
       </div>
-
-      {(filtro === "todas" || filtro === "vencidas") && vencidas.length > 0 && (
-        <section style={section}>
-          <h2 style={sectionTitle}>🔴 Vencidas</h2>
-
-          {vencidas.map((actividad) => (
-            <div key={actividad.id} style={card}>
-              <div>
-                <h3>{actividad.titulo}</h3>
-                <p>{actividad.curso}</p>
-                <p style={time}>{actividad.fecha}</p>
-              </div>
-              <button style={action}
-              onClick={() => navigate(`/actividad/${actividad.id}`)}
-              >Ir a resolver</button>
-            </div>
-          ))}
-
-        </section>
-      )}
-
       {(filtro === "todas" || filtro === "hoy") && (
         <section style={section}>
           <h2 style={sectionTitle}>🟠 Para hoy</h2>
@@ -182,6 +161,26 @@ function Hoy() {
           {paraHoy.length === 0 && (
             <p style={empty}>No tienes actividades para hoy 🎉</p>
           )}
+
+        </section>
+      )}
+
+      {(filtro === "todas" || filtro === "vencidas") && vencidas.length > 0 && (
+        <section style={section}>
+          <h2 style={sectionTitle}>🔴 Vencidas</h2>
+
+          {vencidas.map((actividad) => (
+            <div key={actividad.id} style={card}>
+              <div>
+                <h3>{actividad.titulo}</h3>
+                <p>{actividad.curso}</p>
+                <p style={time}>{actividad.fecha}</p>
+              </div>
+              <button style={action}
+              onClick={() => navigate(`/actividad/${actividad.id}`)}
+              >Ir a resolver</button>
+            </div>
+          ))}
 
         </section>
       )}
