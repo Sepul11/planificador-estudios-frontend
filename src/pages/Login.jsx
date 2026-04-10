@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUserAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
+import {
+  Typography
+} from "@mui/material";
+import logo from "../assets/logo.png";
 
 function Login() {
   const navigate = useNavigate();
@@ -59,16 +63,26 @@ function Login() {
       }
     };
 
+return (
+  <div style={layout}>
+    <Toaster position="top-center" />
 
-  return (
-    <div style={container}>
-      <Toaster position="top-center" />
+    {/* ===== LADO IZQUIERDO (BRANDING) ===== */}
+    <div style={leftSide}>
+      <img src={logo} alt="POS System" style={{ width: 200 }} />
+      <h1 style={brandTitle}>Planificador de Estudios</h1>
+      <p style={brandText}>
+        Organiza tus materias, gestiona tu tiempo y mejora tu rendimiento
+        académico con una herramienta diseñada para estudiantes.
+      </p>
+    </div>
 
+    {/* ===== LADO DERECHO (LOGIN) ===== */}
+    <div style={rightSide}>
       <div style={card}>
-        <h1 style={title}>Planificador de Estudios</h1>
+        <h2 style={title}>Iniciar Sesión</h2>
 
         <form style={form} onSubmit={handleLogin}>
-          
           {/* Usuario */}
           <div style={inputWrapper}>
             <FaUserAlt style={icon} />
@@ -90,41 +104,39 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-
             {showPassword ? (
-              <FaEyeSlash
-                style={eyeIcon}
-                onClick={() => setShowPassword(false)}
-              />
+              <FaEyeSlash style={eyeIcon} onClick={() => setShowPassword(false)} />
             ) : (
-              <FaEye
-                style={eyeIcon}
-                onClick={() => setShowPassword(true)}
-              />
+              <FaEye style={eyeIcon} onClick={() => setShowPassword(true)} />
             )}
           </div>
 
-          <p>
+          <p style={{ fontSize: "0.9rem" }}>
             ¿No tienes cuenta? <a href="/register">Regístrate</a>
           </p>
 
-          <button style={button} disabled={loading}>
-            {loading ? (
-              <div style={{ ...spinner, width: "20px", height: "20px", borderWidth: "3px" }}></div>
-            ) : (
-              "Iniciar sesión"
-            )}
+          <button style={button}>
+            Iniciar sesión
           </button>
-
         </form>
+        {/* Footer */}
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ mt: 4, color: "#777" }}
+        >
+          © 2026 Planificador Estudios — Desarrollado por: 
+          Juan Serna | Simon Sepulveda | Cristian Ospina
+        </Typography>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 /* ===== PALETA ===== */
 const colors = {
-  dark: "#472825",
+  dark: "#402E29",
   medium: "#96786F",
   accent: "#D3AB80",
   light: "#FDE4BC",
@@ -139,13 +151,6 @@ const container = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-};
-
-const card = {
-  background: "#FFFFFF",
-  padding: "2.5rem",
-  borderRadius: "20px",
-  boxShadow: "0 12px 30px rgba(71,40,37,0.15)",
 };
 
 const title = {
@@ -213,6 +218,55 @@ const spinner = {
   borderTop: "4px solid #472825",
   borderRadius: "50%",
   animation: "spin 1s linear infinite",
+};
+const layout = {
+  display: "flex",
+  height: "100vh",
+  background: colors.base,
+};
+
+/* ===== IZQUIERDA ===== */
+const leftSide = {
+  flex: 1,
+  background: colors.dark,
+  color: "white",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "4rem",
+};
+
+const brandTitle = {
+  fontSize: "2.5rem",
+  fontWeight: "bold",
+  marginBottom: "1.5rem",
+  textAlign: "center",
+};
+
+const brandText = {
+  fontSize: "1.1rem",
+  textAlign: "center",
+  maxWidth: "400px",
+  opacity: 0.9,
+  lineHeight: 1.6,
+};
+
+/* ===== DERECHA ===== */
+const rightSide = {
+  flex: 1,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+/* ===== CARD MÁS GRANDE ===== */
+const card = {
+  background: "#FFFFFF",
+  padding: "3rem",
+  borderRadius: "24px",
+  boxShadow: "0 20px 50px rgba(71,40,37,0.15)",
+  width: "380px",
 };
 
 export default Login;

@@ -1,10 +1,22 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FaUserAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import LoadingOverlay from "../components/LoadingOverLay";
+import logo from "../assets/logo.png";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+
+import PersonIcon from "@mui/icons-material/Person";
+import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
+import EmailIcon from "@mui/icons-material/Email";
+import LockIcon from "@mui/icons-material/Lock";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   const [form, setForm] = useState({
     nombre: "",
@@ -24,7 +36,7 @@ function Register() {
     });
   };
 
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
   e.preventDefault();
 
   if (form.password !== form.confirmPassword) {
@@ -33,6 +45,7 @@ function Register() {
   }
 
   setLoading(true);
+  setLoadingMessage("Creando usuario...");
 
   try {
     const response = await fetch(
@@ -55,125 +68,163 @@ function Register() {
     const data = await response.json();
 
     if (!response.ok) {
+      setLoading(false);
       alert(data.error || "Error al registrar usuario");
       return;
     }
 
-    alert("Cuenta creada correctamente 🎉");
+    // 👇 CAMBIAMOS EL MENSAJE SIN QUITAR EL LOADING
+    setLoadingMessage("Usuario creado correctamente 🎉");
 
-    navigate("/login");
+    // 👇 Espera 2 segundos para que el usuario vea el mensaje
+    setTimeout(() => {
+      navigate("/login");
+    }, 2000);
 
   } catch (error) {
     console.error(error);
-    alert("Error conectando con el servidor");
-  } finally {
     setLoading(false);
+    alert("Error conectando con el servidor");
   }
 };
 
+return (
+  <>
+    {loading && <LoadingOverlay message={loadingMessage} />}
 
-  return (
-    <div style={container}>
-      <div style={card}>
-        <h1 style={title}>Crear Cuenta</h1>
-        <form style={formStyle} onSubmit={handleSubmit}>
-          {/* Nombre */}
-          <div style={inputWrapper}>
-            <FaUserAlt style={icon} />
-            <input
-              style={input}
-              type="text"
-              name="nombre"
-              placeholder="Nombre"
-              value={form.nombre}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Usuario */}
-          <div style={inputWrapper}>
-            <FaUserAlt style={icon} />
-            <input
-              style={input}
-              type="text"
-              name="usuario"
-              placeholder="Usuario"
-              value={form.usuario}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Email */}
-          <div style={inputWrapper}>
-            <FaUserAlt style={icon} />
-            <input
-              style={input}
-              type="email"
-              name="email"
-              placeholder="Correo"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Contraseña */}
-          <div style={inputWrapper}>
-            <FaLock style={icon} />
-            <input
-              style={input}
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Contraseña"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
-            {showPassword ? (
-              <FaEyeSlash
-                style={eyeIcon}
-                onClick={() => setShowPassword(false)}
-              />
-            ) : (
-              <FaEye style={eyeIcon} onClick={() => setShowPassword(true)} />
-            )}
-          </div>
-
-          {/* Confirmar contraseña */}
-          <div style={inputWrapper}>
-            <FaLock style={icon} />
-            <input
-              style={input}
-              type={showConfirm ? "text" : "password"}
-              name="confirmPassword"
-              placeholder="Confirmar contraseña"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required
-            />
-            {showConfirm ? (
-              <FaEyeSlash
-                style={eyeIcon}
-                onClick={() => setShowConfirm(false)}
-              />
-            ) : (
-              <FaEye style={eyeIcon} onClick={() => setShowConfirm(true)} />
-            )}
-          </div>
-
-        <button style={button} type="submit" disabled={loading}>
-          {loading ? "Creando cuenta..." : "Crear cuenta"}
-        </button>
-        </form>
-
-        <p>
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+    <div style={layout}>
+      {/* ===== IZQUIERDA (MENSAJE) ===== */}
+      <div style={leftSide} className="hide-mobile">
+        <img src={logo} alt="logo" style={{ width: 200 }} />
+        <h1 style={brandTitle}>Crea tu cuenta</h1>
+        <p style={brandText}>
+          Empieza hoy a organizar tus materias, tus horarios y tus metas.
+          Tu rendimiento académico mejora cuando tu tiempo está bien planificado.
         </p>
       </div>
+
+      {/* ===== DERECHA (FORMULARIO) ===== */}
+      <div style={rightSide}>
+        <div style={card}>
+          <h2 style={title}>Registro de Usuario</h2>
+
+          <form style={formStyle} onSubmit={handleSubmit}>
+            {/* inputs iguales a los tuyos */}
+          {/* Nombre */}
+          <TextField
+            label="Nombre completo"
+            variant="outlined"
+            fullWidth
+            value={form.nombre}
+            onChange={handleChange}
+            name="nombre"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* Usuario */}
+          <TextField
+            label="Usuario"
+            variant="outlined"
+            fullWidth
+            value={form.usuario}
+            onChange={handleChange}
+            name="usuario"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AlternateEmailIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* Email */}
+        <TextField
+          label="Correo electrónico"
+          type="email"
+          variant="outlined"
+          fullWidth
+          value={form.email}
+          onChange={handleChange}
+          name="email"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <EmailIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+
+          {/* Contraseña */}
+          <TextField
+            label="Contraseña"
+            type={showPassword ? "text" : "password"}
+            variant="outlined"
+            fullWidth
+            value={form.password}
+            onChange={handleChange}
+            name="password"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          {/* Confirmar contraseña */}
+          <TextField
+            label="Confirmar contraseña"
+            type={showConfirm ? "text" : "password"}
+            variant="outlined"
+            fullWidth
+            value={form.confirmPassword}
+            onChange={handleChange}
+            name="confirmPassword"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowConfirm(!showConfirm)}>
+                    {showConfirm ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+            <button style={button} type="submit">
+              Crear Cuenta
+            </button>
+          </form>
+
+          <p style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
+            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          </p>
+        </div>
+      </div>
     </div>
-  );
+  </>
+);
 }
 
 /* ===== PALETA (igual que login) ===== */
@@ -195,15 +246,6 @@ const container = {
   background: colors.base,
 };
 
-const card = {
-  background: "#FFFFFF",
-  padding: "2.5rem",
-  borderRadius: "20px",
-  boxShadow: "0 12px 30px rgba(71,40,37,0.15)",
-  textAlign: "center",
-  width: "350px",
-};
-
 const title = {
   color: colors.dark,
   textAlign: "center",
@@ -216,37 +258,6 @@ const formStyle = {
   gap: "1rem",
 };
 
-const inputWrapper = {
-  position: "relative",
-  width: "100%",
-};
-
-const icon = {
-  position: "absolute",
-  left: "10px",
-  top: "50%",
-  transform: "translateY(-50%)",
-  color: colors.medium,
-};
-
-const eyeIcon = {
-  position: "absolute",
-  right: "10px",
-  top: "50%",
-  transform: "translateY(-50%)",
-  color: colors.medium,
-  cursor: "pointer",
-};
-
-const input = {
-  padding: "0.75rem 2.5rem",
-  width: "100%",
-  maxWidth: "100%",
-  borderRadius: "10px",
-  border: `1px solid ${colors.light}`,
-  fontSize: "0.95rem",
-  boxSizing: "border-box",
-};
 
 const button = {
   marginTop: "0.8rem",
@@ -259,6 +270,53 @@ const button = {
   fontSize: "1rem",
   fontWeight: "600",
   cursor: "pointer",
+};
+
+const layout = {
+  display: "flex",
+  height: "100vh",
+  background: colors.base,
+};
+
+const leftSide = {
+  flex: 1,
+  background: colors.dark,
+  color: "white",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "4rem",
+};
+
+const brandTitle = {
+  fontSize: "2.5rem",
+  fontWeight: "bold",
+  marginBottom: "1.5rem",
+  textAlign: "center",
+};
+
+const brandText = {
+  fontSize: "1.1rem",
+  textAlign: "center",
+  maxWidth: "420px",
+  opacity: 0.9,
+  lineHeight: 1.6,
+};
+
+const rightSide = {
+  flex: 1,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const card = {
+  background: "#FFFFFF",
+  padding: "3rem",
+  borderRadius: "24px",
+  boxShadow: "0 20px 50px rgba(71,40,37,0.15)",
+  width: "400px",
 };
 
 export default Register;
