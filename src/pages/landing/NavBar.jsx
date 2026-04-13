@@ -5,7 +5,7 @@ function Navbar() {
     <nav className="landing-navbar">
       
       <div className="landing-logo">
-      <img src={logo} alt="logo" style={{  height: "20px", width: "auto"}} />
+      <img src={logo} alt="logo" style={{  height: "100px", width: "auto"}} />
       Planificador de Estudios
       </div>
 
