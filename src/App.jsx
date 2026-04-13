@@ -4,9 +4,9 @@ import Navbar from "./components/NavBar.jsx";
 import Menu from "./pages/Menu";
 import Hoy from "./pages/Hoy";
 import Crear from "./pages/CrearActividad";
-import Login from "./pages/Login";
 import Actividad from "./pages/Actividad";
 import Register from "./pages/Register";
+import LandingLogin from "./pages/landing/LandingLogin.jsx";
 
 function Layout() {
 
@@ -18,7 +18,7 @@ function Layout() {
 
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<LandingLogin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/hoy" element={<Hoy />} />
