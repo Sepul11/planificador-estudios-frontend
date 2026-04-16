@@ -7,14 +7,14 @@ function LoginCard() {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
  const handleLogin = async (e) => {
       e.preventDefault();
 
-      if (!username || !password) {
+      if (!email || !password) {
         toast.error("Debes completar todos los campos");
         return;
       }
@@ -30,7 +30,7 @@ function LoginCard() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              username,
+              email,
               password,
             }),
           }
@@ -66,14 +66,15 @@ function LoginCard() {
     <h2 style={title}>Iniciar Sesión</h2>
 
     <form style={form} onSubmit={handleLogin}>
-      {/* Usuario */}
+          {/* Correo */}
           <div style={inputWrapper}>
             <FaUserAlt style={icon} />
             <input
               style={input}
-              placeholder="Usuario"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 

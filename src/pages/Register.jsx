@@ -20,7 +20,6 @@ function Register() {
 
   const [form, setForm] = useState({
     nombre: "",
-    usuario: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -56,9 +55,8 @@ function Register() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: form.usuario,
-          password: form.password,
           email: form.email,
+          password: form.password,
           first_name: form.nombre,
           last_name: "",
         }),
@@ -122,23 +120,6 @@ return (
               startAdornment: (
                 <InputAdornment position="start">
                   <PersonIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          {/* Usuario */}
-          <TextField
-            label="Usuario"
-            variant="outlined"
-            fullWidth
-            value={form.usuario}
-            onChange={handleChange}
-            name="usuario"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <AlternateEmailIcon />
                 </InputAdornment>
               ),
             }}
