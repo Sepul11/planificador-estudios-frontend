@@ -7,8 +7,8 @@ function Navbar() {
   const [open, setOpen] = useState(false);
 
   const user = {
-    username: "Cristian",
-    email: "cristian@email.com"
+    username: "Simon",
+    email: "simons@gmail.com"
   };
 
   return (
