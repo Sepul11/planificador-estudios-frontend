@@ -5,6 +5,7 @@ import logo from "../assets/logo.png";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
+import { FaUserAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 import PersonIcon from "@mui/icons-material/Person";
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
@@ -126,22 +127,22 @@ return (
           />
 
           {/* Email */}
-        <TextField
-          label="Correo electrónico"
-          type="email"
-          variant="outlined"
-          fullWidth
-          value={form.email}
-          onChange={handleChange}
-          name="email"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <EmailIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
+          <TextField
+            label="Correo electrónico"
+            type="email"
+            variant="outlined"
+            fullWidth
+            value={form.email}
+            onChange={handleChange}
+            name="email"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
 
           {/* Contraseña */}
           <TextField
@@ -298,6 +299,32 @@ const card = {
   borderRadius: "24px",
   boxShadow: "0 20px 50px rgba(71,40,37,0.15)",
   width: "400px",
+};
+
+const inputWrapper = {
+  display: "flex",
+  alignItems: "center",
+  border: "1px solid #ccc",
+  borderRadius: "10px",
+  padding: "0.5rem 0.8rem",
+  background: "#fff",
+};
+
+const input = {
+  border: "none",
+  outline: "none",
+  flex: 1,
+  fontSize: "1rem",
+  marginLeft: "0.5rem",
+};
+
+const icon = {
+  color: "#888",
+};
+
+const eyeIcon = {
+  cursor: "pointer",
+  color: "#888",
 };
 
 export default Register;

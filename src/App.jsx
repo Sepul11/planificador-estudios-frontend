@@ -7,6 +7,7 @@ import Crear from "./pages/CrearActividad";
 import Actividad from "./pages/Actividad";
 import Register from "./pages/Register";
 import LandingLogin from "./pages/landing/LandingLogin.jsx";
+import Calendario from "./pages/Calendario";
 
 function Layout() {
 
@@ -24,6 +25,7 @@ function Layout() {
         <Route path="/hoy" element={<Hoy />} />
         <Route path="/crear" element={<Crear />} />
         <Route path="/actividad/:id" element={<Actividad />} />
+        <Route path="/calendario" element={<Calendario />} />
       </Routes>
     </>
   );

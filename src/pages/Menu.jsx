@@ -10,13 +10,18 @@ function Menu() {
 
       <div style={cardsContainer}>
         <div style={card} onClick={() => navigate("/hoy")}>
-          <h2>📅 Hoy</h2>
+          <h2>📌 Hoy</h2>
           <p>Ver tus actividades del día</p>
         </div>
 
         <div style={card} onClick={() => navigate("/crear")}>
           <h2>➕ Crear actividad</h2>
           <p>Agrega una nueva actividad</p>
+        </div>
+
+        <div style={card} onClick={() => navigate("/calendario")}>
+          <h2>📅 Calendario</h2>
+          <p>Planifica tu mes</p>
         </div>
       </div>
     </div>
