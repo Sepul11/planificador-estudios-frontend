@@ -185,7 +185,7 @@ function CrearActividad() {
   }
 
   return (
-    <div style={container}>
+    <div style={{ ...container, paddingTop: "70px" }}>
       <h1 style={title}>Crear actividad</h1>
 
       <div style={card}>
@@ -335,9 +335,8 @@ function CrearActividad() {
   );
 }
 
-
 const container = {
-  minHeight: "100vh",
+  height: "calc(100vh - 120px)",
   background: "#FFF4E2",
   padding: "2rem",
 };

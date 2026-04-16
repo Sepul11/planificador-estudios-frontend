@@ -73,7 +73,7 @@ function Actividad() {
   }
 
   return (
-    <div style={container}>
+    <div style={{ ...container, paddingTop: "110px" }}>
 
       <button style={backBtn} onClick={() => navigate("/hoy")}>
         ← Volver
@@ -118,7 +118,7 @@ function Actividad() {
 /* ===== STYLES ===== */
 
 const container = {
-  minHeight: "100vh",
+  height: "calc(100vh - 160px)",
   background: "#FFF4E2",
   padding: "2rem",
 };

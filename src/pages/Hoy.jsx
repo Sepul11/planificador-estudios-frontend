@@ -80,7 +80,7 @@ function Hoy() {
     }, 0);
 
   return (
-    <div style={container}>
+    <div style={{ ...container, paddingTop: "80px" }}>
 
       <header style={header}>
         <h1>Hoy</h1>
@@ -227,7 +227,7 @@ function Hoy() {
 /* ===== STYLES ===== */
 
 const container = {
-  minHeight: "100vh",
+  height: "calc(100vh - 130px)",
   background: "#FFF4E2",
   padding: "2rem",
   position: "relative",

@@ -29,7 +29,7 @@ function Menu() {
 }
 
 const container = {
-  minHeight: "100vh",
+  height: "calc(100vh - 18px)",
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",

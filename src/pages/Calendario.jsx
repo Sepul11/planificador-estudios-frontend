@@ -34,7 +34,7 @@ function Calendario() {
   };
 
   return (
-    <div style={layout}>
+    <div style={{ ...layout, paddingTop: "110px" }}>
       
       {/* 🔵 PANEL IZQUIERDO */}
       <div style={sidePanel}>
@@ -58,8 +58,7 @@ function Calendario() {
           plugins={[dayGridPlugin]}
           initialView="dayGridMonth"
           events={eventos}
-          height="auto"
-          aspectRatio={1.6}
+          height="75vh"
           headerToolbar={{
             left: "prev,next",
             center: "title",
@@ -84,7 +83,7 @@ const layout = {
   gap: "20px",
   padding: "20px",
   background: colors.base,
-  minHeight: "80vh",
+  minHeight: "84vh",
 };
 
 const sidePanel = {
@@ -118,6 +117,8 @@ const btnHoy = {
   color: "#472825",
   fontWeight: "bold",
   cursor: "pointer",
+  marginTop: "10px",
+  transition: "0.2s",
 };
 
 const calendarContainer = {

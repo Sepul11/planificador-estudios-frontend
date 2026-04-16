@@ -19,6 +19,7 @@ function Navbar() {
         <Link to="/menu">Menu</Link>
         <Link to="/hoy">Hoy</Link>
         <Link to="/crear">Crear</Link>
+        <Link to="/calendario">Calendario</Link>
 
         {/* Perfil */}
         <div className="profile-container">

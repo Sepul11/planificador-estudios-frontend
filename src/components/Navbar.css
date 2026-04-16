@@ -1,4 +1,12 @@
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0; /* 🔥 en vez de width: 100% */
+  z-index: 1000;
+
+  box-sizing: border-box; /* 🔥 clave */
+
   display: flex;
   justify-content: space-between;
   align-items: center;
