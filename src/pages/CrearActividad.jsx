@@ -144,7 +144,7 @@ function CrearActividad() {
       const token = localStorage.getItem("token");
       setLoading(true);
       const response = await fetch(
-        "https://planificador-estudios-backend-80p8.onrender.com/actividades/",
+        "https://planificador-estudios-backend-80p8.onrender.com/api/actividades/",
         {
           method: "POST",
           headers: {

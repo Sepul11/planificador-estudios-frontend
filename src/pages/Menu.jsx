@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import img from "../assets/fondomenu.png";
 
 function Menu() {
   const navigate = useNavigate();
@@ -7,6 +8,9 @@ function Menu() {
     <div style={container}>
       <h1 style={title}>Planificador de Estudios</h1>
       <p style={subtitle}>¿Qué deseas hacer hoy?</p>
+      <div style={imglogo}>
+        <img src={img}  alt="Logo" style={{ width: "100%", height: "auto" }}/>
+      </div>
 
       <div style={cardsContainer}>
         <div style={card} onClick={() => navigate("/hoy")}>
@@ -62,4 +66,10 @@ const card = {
   transition: "transform 0.2s",
 };
 
+const imglogo = {
+  width: "100%",
+  maxWidth: "380px",
+  filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.15))", 
+  transition: "transform 0.3s ease",
+};
 export default Menu;

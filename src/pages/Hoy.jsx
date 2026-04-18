@@ -1,352 +1,368 @@
+import { useEffect, useState } from "react";
+import { getHoy } from "../services/actividadService";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { completarSubtarea, posponerActividad } from "../services/actividadService";
+import {
+  Card, CardContent, Typography, Chip,
+  Button, Alert, Stack, ToggleButton, ToggleButtonGroup,
+  TextField, Box
+} from "@mui/material";
+import imgvacio from "../assets/imgvacio.png";
+import logo from "../assets/logo.png";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import ScheduleIcon from "@mui/icons-material/Schedule";
 
 function Hoy() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [curso, setCurso] = useState("");
+  const [filtro, setFiltro] = useState("todas");
+
+
   const navigate = useNavigate();
 
-  const [actividades, setActividades] = useState([]);
-  const [filtro, setFiltro] = useState("todas");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [busqueda, setBusqueda] = useState("");
+const fetchData = () => {
+  setLoading(true);
+  setError(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    fetch(`https://planificador-estudios-backend-80p8.onrender.com/actividades/`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Token ${token}`,
-    }})
-      .then((res) => res.json())
-      .then((data) => {
-        setActividades(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError("No se pudieron cargar las actividades");
-        setLoading(false);
-      });
-  }, []);
+  getHoy(curso)
+    .then((res) => setData(res.data))
+    .catch(() => setError(true))
+    .finally(() => setLoading(false));
+};
 
-    // Fecha de hoy
-    const hoy = new Date();
-    hoy.setHours(0,0,0,0);
+useEffect(() => {
+  const delay = setTimeout(fetchData, 400);
+  return () => clearTimeout(delay);
+}, [curso]);
 
-    // FILTRO DE BÚSQUEDA
-    const actividadesFiltradas = actividades.filter((a) => {
-      const texto = busqueda.toLowerCase();
+  // 🟡 Loading (tu estilo)
+  if (loading) {
+    return (
+      <div style={loadingContainer}>
+        <div style={spinner}></div>
+        <p>Cargando tu planificación...</p>
+      </div>
+    );
+  }
 
-      return (
-        a.titulo?.toLowerCase().includes(texto) ||
-        a.curso?.toLowerCase().includes(texto)
-      );
-    });
+  // 🔴 Error
+  if (error || !data) {
+    return (
+      <div style={emptyContainer}>
+        <h2>Error al cargar</h2>
+        <button style={emptyBtn} onClick={() => window.location.reload()}>
+          Reintentar
+        </button>
+      </div>
+    );
+  }
 
-    // CLASIFICACIÓN
-    const vencidas = [];
-    const paraHoy = [];
-    const proximas = [];
+  // ⚪ Empty
+const sinDatosFiltrados =
+  (filtro === "todas" &&
+    data.vencidas.length === 0 &&
+    data.hoy.length === 0 &&
+    data.proximas.length === 0) ||
+  (filtro === "vencidas" && data.vencidas.length === 0) ||
+  (filtro === "hoy" && data.hoy.length === 0) ||
+  (filtro === "proximas" && data.proximas.length === 0);
 
-    actividadesFiltradas.forEach((a) => {
+const getTag = (tipo) => {
+  if (tipo === "hoy") return <span style={tagHoy}>HOY</span>;
+  if (tipo === "vencidas") return <span style={tagVencida}>VENCIDA</span>;
+  if (tipo === "proximas") return <span style={tagProxima}>PRÓXIMA</span>;
+};
 
-      if (!a.fecha) return;
-
-      const fechaActividad = new Date(a.fecha);
-      fechaActividad.setHours(0,0,0,0);
-
-      if (fechaActividad < hoy) {
-        vencidas.push(a);
-      } 
-      else if (fechaActividad.getTime() === hoy.getTime()) {
-        paraHoy.push(a);
-      } 
-      else {
-        proximas.push(a);
-      }
-
-    });
-
-    // CÁLCULO DE HORAS
-    const horasHoy = paraHoy.reduce((total, a) => {
-
-      if (!a.hora_inicio || !a.hora_fin) return total;
-
-      const inicio = Number(a.hora_inicio.split(":")[0]);
-      const fin = Number(a.hora_fin.split(":")[0]);
-
-      return total + (fin - inicio);
-
-    }, 0);
 
   return (
-    <div style={{ ...container, paddingTop: "80px" }}>
-
+    <div style={container}>
+      {/* HEADER */}
       <header style={header}>
-        <h1>Hoy</h1>
-        <p style={date}>Actividades del día</p>
+        <img src={logo} alt="logo" style={logoStyle} />
+
+        <div>
+          <h1 style={title}>Tu día de estudio</h1>
+          <p style={subtitle}>Organiza, prioriza y avanza</p>
+        </div>
       </header>
 
-      {vencidas.length > 0 && (
-        <div style={alert}>
-          ⚠️ Tienes {vencidas.length} tareas vencidas. Priorízalas.
+      {/* REGLA (US-04) */}
+      <Alert severity="info" sx={{ mb: 2 }}>
+        {data.regla}
+      </Alert>
+      {data.resumen.horas_hoy > 0 && (
+        <Alert
+          severity={data.resumen.sobrecarga ? "error" : "success"}
+          sx={{ mb: 3 }}
+        >
+          <Typography variant="subtitle1">
+            Hoy tienes <strong>{data.resumen.horas_hoy} horas</strong> planificadas
+          </Typography>
+
+          <Typography variant="body2">
+            Límite diario: {data.resumen.limite}h
+          </Typography>
+
+          {data.resumen.sobrecarga && (
+            <Typography variant="body2" sx={{ mt: 1, fontWeight: "bold" }}>
+              ⚠️ Estás sobrecargado hoy. Considera reprogramar.
+            </Typography>
+          )}
+        </Alert>
+      )}
+
+      {/* FILTRO (US-05) */}
+        <Box sx={filtersRow}>
+          {[
+            { key: "todas", label: "Todas", color: "#3A2E2A" },
+            { key: "vencidas", label: "Vencidas", color: "#E76F51" },
+            { key: "hoy", label: "Hoy", color: "#3A86FF" },  // azul
+            { key: "proximas", label: "Próximas", color: "#2A9D8F" },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFiltro(f.key)}
+              style={filtroBtn(filtro === f.key, f.color)}
+            >
+              {f.label}
+            </button>
+          ))}
+
+          <input
+            placeholder="Buscar por curso..."
+            value={curso}
+            onChange={(e) => setCurso(e.target.value)}
+            style={searchInputStyle}
+          />
+        </Box>
+
+      {sinDatosFiltrados && (
+        <div style={{ textAlign: "center", marginTop: "2rem" }}>
+          <img src={imgvacio} alt="vacío" style={emptyImg} />
+          <h3>No hay resultados</h3>
+          <p>Intenta cambiar el filtro o crear una actividad</p>
         </div>
       )}
 
-      <section style={summary}>
-        ⏱️ <strong>Resumen del día:</strong> {horasHoy} horas planificadas
-      </section>
-
-      <div style={filters}>
-
-        <button
-          style={filtro === "todas" ? filterActive : filterBtn}
-          onClick={() => setFiltro("todas")}
-        >
-          Todas
-        </button>
-
-        <button
-          style={filtro === "vencidas" ? filterActive : filterBtn}
-          onClick={() => setFiltro("vencidas")}
-        >
-          🔴 Vencidas
-        </button>
-
-        <button
-          style={filtro === "hoy" ? filterActive : filterBtn}
-          onClick={() => setFiltro("hoy")}
-        >
-          🟠 Hoy
-        </button>
-
-        <button
-          style={filtro === "proximas" ? filterActive : filterBtn}
-          onClick={() => setFiltro("proximas")}
-        >
-          🟢 Próximas
-        </button>
-
-        <input
-        type="text"
-        placeholder="Buscar por título o curso..."
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.target.value)}
-        style={searchInput}
+      {/* SECCIONES */}
+      <Seccion
+        titulo="Vencidas"
+        tipo="vencidas"
+        data={data.vencidas}
+        color="#E76F51"
+        navigate={navigate}
+        visible={filtro === "todas" || filtro === "vencidas"}
+        refresh={fetchData}
+        getTag={getTag}
       />
 
-      </div>
-      {(filtro === "todas" || filtro === "hoy") && (
-        <section style={section}>
-          <h2 style={sectionTitle}>🟠 Para hoy</h2>
+      <Seccion
+        titulo="Para hoy"
+        tipo="hoy"
+        data={data.hoy}
+        color="#3A86FF"
+        navigate={navigate}
+        visible={filtro === "todas" || filtro === "hoy"}
+        refresh={fetchData}
+        getTag={getTag}
+      />
 
-          {paraHoy.map((actividad) => (
-            <div key={actividad.id} style={card}>
-              <div>
-                <h3>{actividad.titulo}</h3>
-                <p>{actividad.curso}</p>
-                <p style={time}>
-                  {actividad.hora_inicio} - {actividad.hora_fin}
-                </p>
-              </div>
-              <button
-                style={action}
-                onClick={() => navigate(`/actividad/${actividad.id}`)}
-              >
-                Ver
-              </button>
-            </div>
-          ))}
+      <Seccion
+        titulo="Próximas"
+        tipo="proximas"
+        data={data.proximas}
+        color="#2A9D8F"
+        navigate={navigate}
+        visible={filtro === "todas" || filtro === "proximas"}
+        refresh={fetchData}
+        getTag={getTag}
+      />
 
-          {paraHoy.length === 0 && (
-            <p style={empty}>No tienes actividades para hoy 🎉</p>
-          )}
-
-        </section>
-      )}
-
-      {(filtro === "todas" || filtro === "vencidas") && vencidas.length > 0 && (
-        <section style={section}>
-          <h2 style={sectionTitle}>🔴 Vencidas</h2>
-
-          {vencidas.map((actividad) => (
-            <div key={actividad.id} style={card}>
-              <div>
-                <h3>{actividad.titulo}</h3>
-                <p>{actividad.curso}</p>
-                <p style={time}>{actividad.fecha}</p>
-              </div>
-              <button style={action}
-              onClick={() => navigate(`/actividad/${actividad.id}`)}
-              >Ir a resolver</button>
-            </div>
-          ))}
-
-        </section>
-      )}
-
-      {(filtro === "todas" || filtro === "proximas") && (
-        <section style={section}>
-          <h2 style={sectionTitle}>🟢 Próximas</h2>
-
-          {proximas.map((actividad) => (
-            <div key={actividad.id} style={card}>
-              <div>
-                <h3>{actividad.titulo}</h3>
-                <p>{actividad.curso}</p>
-                <p style={time}>{actividad.fecha}</p>
-              </div>
-              <button
-                style={action}
-                onClick={() => navigate(`/actividad/${actividad.id}`)}
-              >
-                Ver
-              </button>
-            </div>
-          ))}
-
-        </section>
-      )}
-      {busqueda && 
-        vencidas.length === 0 && 
-        paraHoy.length === 0 && 
-        proximas.length === 0 && (
-          <p style={empty}>
-            No se encontraron actividades 🔎
-          </p>
-        )}
-
+      {/* FAB */}
       <button style={fab} onClick={() => navigate("/crear")}>
-        ➕
+        ＋ Crear actividad
       </button>
-
     </div>
   );
 }
 
-/* ===== STYLES ===== */
+const agruparPorActividad = (subtareas) => {
+  return subtareas.reduce((acc, t) => {
+    const key = t.actividad;
+
+    if (!acc[key]) {
+      acc[key] = {
+        actividad: t.actividad,
+        actividad_titulo: t.actividad_titulo,
+        curso: t.curso,
+        items: [],
+      };
+    }
+
+    acc[key].items.push(t);
+    return acc;
+  }, {});
+};
+
+function Seccion({ titulo, tipo, data, navigate, color, visible, refresh }) {
+  if (!visible) return null;
+
+  const grupos = agruparPorActividad(data);
+
+  return (
+    <section style={{ marginBottom: "2rem" }}>
+      <Typography variant="h5" sx={{ mb: 2, color }}>
+        {titulo}
+      </Typography>
+
+      {Object.keys(grupos).length === 0 ? (
+        <Typography color="text.secondary">
+          No hay subtareas aquí
+        </Typography>
+      ) : (
+        Object.values(grupos).map((grupo) => (
+          <Card key={grupo.actividad} sx={cardStyle}>
+            <CardContent sx={cardContentStyle}>
+
+              {/* HEADER ACTIVIDAD */}
+              <Stack direction="row" alignItems="flex-start" spacing={2}>
+                {/* IZQUIERDA */}
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6">
+                    {grupo.actividad_titulo}
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary">
+                    {grupo.curso}
+                  </Typography>
+
+                  <Box sx={tipoTag(tipo)}>
+                    {tipo.toUpperCase()}
+                  </Box>
+                </Box>
+
+                {/* DERECHA (BOTONES) */}
+                <Stack direction="row" spacing={1}>
+                  <Button
+                    size="small"
+                    sx={verBtn}
+                    startIcon={<VisibilityIcon />}
+                    onClick={() => navigate(`/actividad/${grupo.actividad}`)}
+                  >
+                    Ver
+                  </Button>
+
+                  <Button
+                    size="small"
+                    sx={posponerBtn}
+                    startIcon={<ScheduleIcon />}
+                    onClick={async () => {
+                      await posponerActividad(grupo.actividad);
+                      refresh();
+                    }}
+                  >
+                    Posponer
+                  </Button>
+                </Stack>
+              </Stack>
+
+              {/* SUBTAREAS */}
+              {grupo.items.map((t) => (
+                <Box sx={subtaskBox}>
+                  <Box>
+                    <Typography sx={{ fontWeight: 500 }}>{t.titulo}</Typography>
+                    <Typography sx={{ fontSize: "0.8rem", color: "#777" }}>
+                      {formatFecha(t.fecha_objetivo)}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <Box sx={hoursBox}>
+                      ⏱ {formatHoras(t.horas)}
+                    </Box>
+
+                    <Button
+                      variant="contained"
+                      size="small"
+                      sx={completeBtn}
+                      onClick={async () => {
+                        await completarSubtarea(t.id);
+                        refresh();
+                      }}
+                    >
+                      Completar
+                    </Button>
+                  </Box>
+                </Box>
+              ))}
+
+            </CardContent>
+          </Card>
+        ))
+      )}
+    </section>
+  );
+}
+
+export default Hoy;
+
+//
+// 🎨 ESTILOS (reciclados y ajustados)
+//
+const formatFecha = (fecha) => {
+  const f = new Date(fecha);
+  return f.toLocaleDateString("es-CO", {
+    day: "numeric",
+    month: "short",
+  });
+};
+
+const formatHoras = (h) => {
+  if (h === 1) return "1 hora";
+  return `${h} horas`;
+};
 
 const container = {
-  height: "calc(100vh - 130px)",
+  paddingTop: "100px",
+  paddingRight: "2rem",
+  paddingBottom: "2rem",
+  paddingLeft: "2rem",
   background: "#FFF4E2",
-  padding: "2rem",
-  position: "relative",
+  minHeight: "100vh",
 };
 
 const header = {
-  marginBottom: "1rem",
-  color: "#472825",
-};
-
-const date = {
-  color: "#96786F",
-};
-
-const alert = {
-  background: "#FDE4BC",
-  color: "#472825",
-  padding: "1rem",
-  borderRadius: "12px",
-  marginBottom: "1.5rem",
-};
-
-const section = {
+  display: "flex",
+  alignItems: "center",
+  gap: "1rem",
   marginBottom: "2rem",
 };
 
-const sectionTitle = {
-  marginBottom: "0.8rem",
+const logoStyle = {
+  width: "100px",
 };
 
-const card = {
-  background: "#FFFFFF",
-  padding: "1.2rem",
-  borderRadius: "16px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  boxShadow: "0 6px 16px rgba(71,40,37,0.12)",
-  marginBottom: "0.8rem",
-};
+const title = { margin: 0, color: "#3A2E2A" };
+const subtitle = { margin: 0, color: "#8D6E63" };
 
-const time = {
-  color: "#777",
-};
-
-const action = {
-  background: "#D3AB80",
-  color: "#472825",
-  border: "none",
-  borderRadius: "10px",
-  padding: "0.6rem 1rem",
-  fontWeight: "600",
-  cursor: "pointer",
-};
-
-const filters = {
-  display: "flex",
-  gap: "0.6rem",
-  marginBottom: "1.5rem",
-  flexWrap: "wrap"
-};
-
-const filterBtn = {
-  background: "#FFFFFF",
-  border: "1px solid #D3AB80",
-  borderRadius: "20px",
-  padding: "0.4rem 0.9rem",
-  cursor: "pointer",
-};
-
-const filterActive = {
-  background: "#472825",
-  color: "white",
-  border: "none",
-  borderRadius: "20px",
-  padding: "0.4rem 0.9rem",
-  cursor: "pointer",
-};
-
-const cardTitle = {
-  margin: 0,
-  fontSize: "1.1rem",
-};
-
-const course = {
-  fontSize: "0.8rem",
-  color: "#96786F",
-};
-
-const subInfo = {
-  fontSize: "0.75rem",
-  color: "#888",
-};
-
-const summary = {
-  background: "#e7f1ff",
-  padding: "1rem",
-  borderRadius: "10px",
-  marginBottom: "4rem",
-};
 
 const fab = {
   position: "fixed",
   bottom: "2rem",
   right: "2rem",
-  width: "56px",
-  height: "56px",
-  borderRadius: "50%",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "12px 18px",
+  borderRadius: "30px",
+  background: "#3A2E2A",
+  color: "white",
+  fontSize: "1rem",
   border: "none",
-  background: "#472825",
-  color: "#FFF4E2",
-  fontSize: "1.5rem",
   cursor: "pointer",
-};
-
-const empty = {
-  color: "#777",
-  textAlign: "center",
-  marginTop: "1rem"
+  boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
 };
 
 const loadingContainer = {
@@ -355,26 +371,136 @@ const loadingContainer = {
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
-  color: "#472825",
 };
 
 const spinner = {
   width: "40px",
   height: "40px",
-  border: "4px solid #D3AB80",
-  borderTop: "4px solid #472825",
+  border: "4px solid #ddd",
+  borderTop: "4px solid #3A2E2A",
   borderRadius: "50%",
   animation: "spin 1s linear infinite",
 };
 
-const searchInput = {
-  width: "100%",
-  padding: "0.7rem 1rem",
-  borderRadius: "10px",
-  border: "1px solid #ddd",
-  marginBottom: "1rem",
-  fontSize: "0.9rem",
-  outline: "none"
+const emptyContainer = {
+  height: "100vh",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  gap: "10px",
 };
 
-export default Hoy;
+const emptyImg = {
+  width: "200px",
+};
+
+const emptyBtn = {
+  padding: "0.8rem 1.5rem",
+  borderRadius: "12px",
+  border: "none",
+  background: "#3A2E2A",
+  color: "white",
+};
+
+const cardStyle = {
+  borderRadius: "14px",
+  mb: 2,
+  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  overflow: "hidden",
+};
+
+const cardContentStyle = {
+  padding: "20px 24px !important",
+};
+
+const subtaskBox = {
+  marginTop: "14px",
+  padding: "14px 18px",
+  borderRadius: "12px",
+  background: "#fafafa",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+};
+
+const completeBtn = {
+  borderRadius: "10px",
+  background: "#2A9D8F",   // VERDE BONITO
+  color: "white",
+  fontWeight: 500,
+  "&:hover": {
+    background: "#23867a",
+  },
+};
+
+const hoursBox = {
+  background: "#E8F6F3",
+  color: "#2A9D8F",
+  padding: "6px 10px",
+  borderRadius: "10px",
+  fontSize: "0.8rem",
+  fontWeight: "bold",
+};
+
+const tipoTag = (tipo) => ({
+  marginTop: "8px",
+  fontSize: "0.75rem",
+  fontWeight: "bold",
+  padding: "4px 12px",
+  borderRadius: "12px",
+  color: "white",
+  width: "fit-content",
+  background:
+    tipo === "vencidas"
+      ? "#E76F51"
+      : tipo === "hoy"
+      ? "#3A86FF" 
+      : "#2A9D8F",
+});
+
+const verBtn = {
+  textTransform: "none",
+  borderRadius: "8px",
+  border: "1px solid #ddd",
+  color: "#555",
+  fontSize: "0.8rem",
+  padding: "4px 10px",
+};
+
+const posponerBtn = {
+  textTransform: "none",
+  borderRadius: "8px",
+  background: "#FFE8D6",
+  color: "#E76F51",
+  fontSize: "0.8rem",
+  padding: "4px 10px",
+  "&:hover": {
+    background: "#fcd5ce",
+  },
+};
+
+const filtersRow = {
+  display: "flex",
+  gap: "10px",
+  flexWrap: "wrap",
+  alignItems: "center",
+  marginBottom: "2rem",
+};
+
+const filtroBtn = (active, color) => ({
+  padding: "8px 14px",
+  borderRadius: "20px",
+  border: "none",
+  cursor: "pointer",
+  background: active ? color : "white",
+  color: active ? "white" : "#444",
+  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+  fontWeight: 500,
+});
+
+const searchInputStyle = {
+  padding: "8px 14px",
+  borderRadius: "20px",
+  border: "1px solid #ddd",
+};
