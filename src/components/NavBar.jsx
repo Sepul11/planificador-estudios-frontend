@@ -1,14 +1,27 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
 function Navbar() {
 
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
-  const user = {
-    username: "Simon",
-    email: "simons@gmail.com"
+  // cargar usuario desde localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  // logout real
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   return (
@@ -28,18 +41,23 @@ function Navbar() {
             className="profile-btn"
             onClick={() => setOpen(!open)}
           >
-            👤 {user.username}
+            👤 {user ? user.email : "Invitado"}
           </button>
 
-          {open && (
+          {open && user && (
             <div className="profile-dropdown">
-              <p><strong>{user.username}</strong></p>
-              <p>{user.email}</p>
+              <p><strong>{user.email}</strong></p>
 
               <hr />
 
               <Link to="/perfil">Ver perfil</Link>
-              <Link to="/login">Cerrar sesión</Link>
+              <Link 
+                to="/login" 
+                className="dropdown-item"
+                onClick={handleLogout}
+              >
+                Cerrar sesión
+              </Link>
             </div>
           )}
         </div>
