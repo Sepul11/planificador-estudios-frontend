@@ -1,7 +1,7 @@
 // src/services/actividadService.js
 import api from "../api/axios";
 
-export const getActividades = () => api.get("/api/actividades/");
+export const getActividades = (params) => api.get("api/actividades/", { params });
 
 export const crearActividad = (data) => api.post("/api/actividades/", data);
 
@@ -14,13 +14,20 @@ export const eliminarActividad = (id) =>
 export const getActividadDetalle = (id) =>
   api.get(`/api/actividades/${id}/`);
 
-export const getActividadesFiltradas = (params) =>
-  api.get("/api/actividades/", { params });
-
-export const getHoy = (curso = "") =>
-  api.get(`api/actividades/hoy/`, {
-    params: { curso }
+export const reprogramarActividad = (id, fecha, modo="subtareas") =>
+  api.patch(`/api/actividades/${id}/reprogramar/`, {
+    fecha,
+    modo
   });
+
+export const getHoy = (buscar = "") =>
+  api.get(`api/actividades/hoy/`, {
+    params: { buscar }
+  });
+
+export const getEventosCalendario = () =>
+  api.get("api/actividades/calendario/");
+
 export const posponerActividad = (id) =>
   api.patch(`/api/actividades/${id}/auto_reprogramar/`);
 
@@ -39,3 +46,4 @@ export const editarSubtarea = (id, data) =>
 
 export const toggleSubtarea = (id, completada) =>
   api.patch(`/api/subtareas/${id}/`, { completada });
+

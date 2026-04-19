@@ -2,6 +2,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getEventosCalendario } from "../services/actividadservice";
 
 function Calendario() {
   const [eventos, setEventos] = useState([]);
@@ -12,19 +13,10 @@ function Calendario() {
 
   const navigate = useNavigate();
 
-  // 🔥 datos simulados
   useEffect(() => {
-    const actividades = [
-      { id: 1, nombre: "Examen Matemáticas", fecha_entrega: "2026-04-22" },
-      { id: 2, nombre: "Tarea Física", fecha_entrega: fechaHoy },
-    ];
-
-    const eventosFormateados = actividades.map((act) => ({
-      title: act.nombre,
-      date: act.fecha_entrega,
-    }));
-
-    setEventos(eventosFormateados);
+    getEventosCalendario().then((res) => {
+      setEventos(res.data);
+    });
   }, []);
 
   // 🔥 ir a hoy
@@ -32,6 +24,8 @@ function Calendario() {
     const calendarApi = calendarRef.current.getApi();
     calendarApi.today();
   };
+
+  
 
   return (
     <div style={{ ...layout, paddingTop: "110px" }}>
@@ -49,6 +43,9 @@ function Calendario() {
         <button style={btnHoy} onClick={() => navigate("/hoy")}>
           Ver actividades de hoy
         </button>
+        <button style={btnHoy} onClick={() => navigate("/actividades")}>
+          Ver todas las actividades
+        </button>
       </div>
 
       {/* 🟡 CALENDARIO */}
@@ -58,6 +55,43 @@ function Calendario() {
           plugins={[dayGridPlugin]}
           initialView="dayGridMonth"
           events={eventos}
+          eventContent={(arg) => {
+            const tipo = arg.event.extendedProps.tipo;
+
+            const esActividad = tipo === "actividad";
+
+            return (
+              <div
+                style={{
+                  background: esActividad ? "#3A86FF" : "#2A9D8F",
+                  color: "white",
+                  borderRadius: "8px",
+                  padding: "4px 6px",
+                  fontSize: "0.75rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                }}
+              >
+                <strong style={{ fontSize: "0.65rem", opacity: 0.9 }}>
+                  {esActividad ? "ACTIVIDAD" : "SUBTAREA"}
+                </strong>
+
+                <span>{arg.event.title}</span>
+              </div>
+            );
+          }}
+          eventClick={(info) => {
+            const id = info.event.id;
+
+            if (id.startsWith("A")) {
+              navigate(`/actividad/${id.replace("A", "")}`);
+            }
+            if (id.startsWith("S")) {
+              // también lleva a la actividad
+              navigate(`/actividad/${info.event.id.replace("S", "")}`);
+            }
+          }}
           height="75vh"
           headerToolbar={{
             left: "prev,next",

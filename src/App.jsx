@@ -8,6 +8,7 @@ import ActividadDetalle from "./pages/ActividadDetalle";
 import Register from "./pages/Register";
 import LandingLogin from "./pages/landing/LandingLogin.jsx";
 import Calendario from "./pages/Calendario";
+import Actividades from "./pages/Actividades.jsx";
 
 function Layout() {
   const location = useLocation();
@@ -25,6 +26,7 @@ function Layout() {
         <Route path="/hoy" element={<Hoy />} />
         <Route path="/crear" element={<Crear />} />
         <Route path="/actividad/:id" element={<ActividadDetalle />} />
+        <Route path="/actividades" element={<Actividades />} />
         <Route path="/calendario" element={<Calendario />} />
       </Routes>
     </>

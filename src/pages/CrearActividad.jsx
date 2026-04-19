@@ -1,5 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Box, Button, Divider, Chip, TextField, Typography 
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import logo from "../assets/logo.png";
+import { crearActividad } from "../services/actividadService";
 
 function CrearActividad() {
   const navigate = useNavigate();
@@ -7,6 +13,7 @@ function CrearActividad() {
   // Actividad
   const [titulo, setTitulo] = useState("");
   const [curso, setCurso] = useState("");
+  const [tipo, setTipo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fecha, setFecha] = useState("");
   const [horaInicio, setHoraInicio] = useState("");
@@ -130,49 +137,38 @@ function CrearActividad() {
     const actividadData = {
       titulo,
       curso,
+      tipo,
       descripcion,
       fecha,
       hora_inicio: horaInicio + ":00",
       hora_fin: horaFin + ":00",
       subtareas: subtareas.map((s) => ({
         titulo: s.titulo,
-        fecha: s.fecha,
+        fecha_objetivo: s.fecha,
         horas: parseInt(s.horas),
       })),
     };
     try {
-      const token = localStorage.getItem("token");
-      setLoading(true);
-      const response = await fetch(
-        "https://planificador-estudios-backend-80p8.onrender.com/api/actividades/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-          body: JSON.stringify(actividadData),
-        }
-      );
-
-      const data = await response.json();
-      console.log("STATUS:", response.status);
-      console.log("DATA:", data);
-
-      if (!response.ok) {
-        throw new Error("Error al crear actividad");
-
+        setLoading(true);
+        const res = await crearActividad(actividadData);
+        navigate(`/actividad/${res.data.id}`, {
+          state: { mensaje: "Actividad creada con éxito ✅" }
+        });
+      } catch (error) {
+        alert("Error conectando con el servidor");
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-
-      navigate(`/actividad/${data.id}`, {
-        state: { mensaje: "Actividad creada con éxito ✅" }
-      });
-    } catch (error) {
-      alert("Error conectando con el servidor");
-      console.error(error);
-    }finally {
+/*
+    try {
+      setLoading(true);
+      const res = await crearActividad(actividadData);
+      navigate(`/actividad/${res.data.id}`);
+    } finally {
       setLoading(false);
     }
+  };*/
 
   }
   if (loading) {
@@ -184,34 +180,32 @@ function CrearActividad() {
     );
   }
 
+  const formatFecha = (fechaStr) => {
+  const [year, month, day] = fechaStr.split("-");
+  const date = new Date(year, month - 1, day);
+
+  return date.toLocaleDateString("es-CO", {
+    day: "numeric",
+    month: "short",
+  });
+};
+
+const formatHoras = (h) => {
+  if (h === 1) return "1 hora";
+  return `${h} horas`;
+};
+
+
   return (
     <div style={{ ...container, paddingTop: "70px" }}>
       <h1 style={title}>Crear actividad</h1>
 
       <div style={card}>
         {/* Actividad */}
-        <input
-          style={{...input, border: errores.titulo ? "1px solid #ff6b6b" : input.border}}
-          placeholder="Nombre de la actividad"
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-        />
-        {errores.titulo && <span style={error}>{errores.titulo}</span>}
-
-        <input
-          style={input}
-          placeholder="Curso"
-          value={curso}
-          onChange={(e) => setCurso(e.target.value)}
-        />
-
-        <textarea
-          style={{...input, minHeight: "80px", resize: "vertical"}}
-          placeholder="Descripción de la actividad"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-        />
-
+          <TextField label="Título" fullWidth value={titulo} onChange={e=>setTitulo(e.target.value)} />
+          <TextField label="Curso" fullWidth value={curso} onChange={e=>setCurso(e.target.value)} />
+          <TextField label="Tipo" fullWidth value={tipo} onChange={e=>setTipo(e.target.value)} />
+          <TextField label="Descripción" multiline rows={3} fullWidth value={descripcion} onChange={e=>setDescripcion(e.target.value)} />
 
         <div style={timeGroup}>
         <label style={label}>Fecha</label>
@@ -315,16 +309,33 @@ function CrearActividad() {
 
     </div>
 
-        {subtareas.map((s) => (
-          <div key={s.id} style={subItem}>
-            <span>
-              {s.titulo} · {s.fecha} · {s.horas}h
-            </span>
-            <button onClick={() => eliminarSubtarea(s.id)} style={removeBtn}>
-              ❌ Eliminar
-            </button>
-          </div>
-        ))}
+    {subtareas.map((s) => (
+        <Box key={s.id} sx={subItem}>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          <Typography fontWeight="bold">{s.titulo}</Typography>
+
+          <Chip
+            label={`📅 ${formatFecha(s.fecha)}`}
+            size="small"
+            sx={chip}
+          />
+
+          <Chip
+            label={`⏱️ ${formatHoras(s.horas)}`}
+            size="small"
+            sx={chip}
+          />
+        </Box>
+
+        <Button
+          onClick={() => eliminarSubtarea(s.id)}
+          startIcon={<DeleteIcon />}
+          sx={btnDelete}
+        >
+          Quitar
+        </Button>
+      </Box>
+    ))}
 
         <button style={saveBtn} disabled={loading} onClick={guardarActividad}>
           {loading ? "Guardando..." : "Guardar actividad"}
@@ -336,9 +347,12 @@ function CrearActividad() {
 }
 
 const container = {
-  height: "calc(100vh - 120px)",
+  paddingTop: "120px",
+  paddingRight: "2rem",
+  paddingBottom: "2rem",
+  paddingLeft: "2rem",
   background: "#FFF4E2",
-  padding: "2rem",
+  minHeight: "100vh",
 };
 
 const title = {
@@ -394,6 +408,11 @@ const addBtn = {
   fontWeight: "500",
   whiteSpace: "nowrap"
 };
+
+const btnDelete = {
+  color: "#ff6b6b",
+};
+
 
 const subItem = {
   background: "#FFF4E2",
@@ -460,6 +479,26 @@ const spinner = {
   borderTop: "4px solid #472825",
   borderRadius: "50%",
   animation: "spin 1s linear infinite",
+};
+
+const subItemPro = {
+  background: "#FFF4E2",
+  padding: "10px 14px",
+  borderRadius: "10px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginTop: "8px",
+};
+
+const chip = {
+  background: "#ffffff",
+  border: "1px solid #D3AB80",
+  padding: "4px 8px",
+  borderRadius: "20px",
+  fontSize: "0.8rem",
+  color: "#472825",
+  fontWeight: "500",
 };
 
 export default CrearActividad;

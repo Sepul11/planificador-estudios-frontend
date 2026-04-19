@@ -8,7 +8,8 @@ import {
   crearSubtarea,
   posponerActividad,
   editarActividad,
-  eliminarActividad
+  eliminarActividad,
+  reprogramarActividad
 } from "../services/actividadService";
 import EditIcon from "@mui/icons-material/Edit";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -35,13 +36,18 @@ import imgvacio from "../assets/imgvacio.png";
 function ActividadDetalle() {
   const { id } = useParams();
   const [actividad, setActividad] = useState(null);
+  const [actividadEdit, setActividadEdit] = useState(null);
   const [nuevoTitulo, setNuevoTitulo] = useState("");
   const [nuevaFecha, setNuevaFecha] = useState("");
   const [nuevasHoras, setNuevasHoras] = useState("");
   const [loadingPosponer, setLoadingPosponer] = useState(false);
+  const [openReprogramar, setOpenReprogramar] = useState(false);
+  const [nuevaFechaRepro, setNuevaFechaRepro] = useState("");
+  const [conflictoRepro, setConflictoRepro] = useState(null);
   const [mensaje, setMensaje] = useState("");
   const [modoEdicion, setModoEdicion] = useState(false);
   const [cambios, setCambios] = useState({});
+  const [errores, setErrores] = useState({});
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -63,6 +69,7 @@ function ActividadDetalle() {
     try {
       const res = await getActividadDetalle(id);
       setActividad(res.data);
+      setActividadEdit(JSON.parse(JSON.stringify(res.data)));
     } catch {
       alert("Error cargando actividad");
     }
@@ -72,11 +79,17 @@ function ActividadDetalle() {
     fetchActividad();
   }, []);
 
-  const formatearFecha = (f) =>
-    new Date(f).toLocaleDateString("es-CO", {
+  const formatFecha = (fechaStr) => {
+    const [year, month, day] = fechaStr.split("-");
+    return new Date(year, month - 1, day).toLocaleDateString("es-CO", {
       day: "numeric",
       month: "short",
     });
+  };
+  const formatHoras = (h) => {
+  if (h === 1) return "1 hora";
+  return `${h} horas`;
+};
 
   const handleToggle = async (t) => {
       const prev = actividad;
@@ -115,39 +128,55 @@ function ActividadDetalle() {
 
 
   const handleCreate = async () => {
-  if (!nuevoTitulo.trim()) {
-    setMensaje("El título es obligatorio");
-    return;
-  }
+    const nuevosErrores = {};
 
-  if (!nuevaFecha) {
-    setMensaje("La fecha es obligatoria");
-    return;
-  }
+    if (!nuevoTitulo.trim()) nuevosErrores.titulo = "El título es obligatorio";
+    if (!nuevaFecha) nuevosErrores.fecha = "La fecha es obligatoria";
+    if (!nuevasHoras || parseFloat(nuevasHoras) <= 0)
+      nuevosErrores.horas = "Las horas deben ser mayores a 0";
 
-  if (!nuevasHoras || parseFloat(nuevasHoras) <= 0) {
-    setMensaje("Las horas deben ser mayores a 0");
-    return;
-  }
+    setErrores(nuevosErrores);
 
-  try {
-    await crearSubtarea({
-      titulo: nuevoTitulo,
-      actividad: id,
-      fecha_objetivo: nuevaFecha,
-      horas: parseFloat(nuevasHoras),
-    });
+    if (Object.keys(nuevosErrores).length > 0) return;
 
-    setNuevoTitulo("");
-    setNuevaFecha("");
-    setNuevasHoras("");
-    fetchActividad();
-    showSnack("Subtarea creada correctamente")
+    try {
+      await crearSubtarea({
+        titulo: nuevoTitulo,
+        actividad: id,
+        fecha_objetivo: nuevaFecha,
+        horas: parseFloat(nuevasHoras),
+      });
 
-  } catch {
-    showSnack("Error al crear subtarea", "error");
-  }
-};
+      setNuevoTitulo("");
+      setNuevaFecha("");
+      setNuevasHoras("");
+      setErrores({});
+      fetchActividad();
+      showSnack("Subtarea creada correctamente");
+    } catch {
+      showSnack("Error al crear subtarea", "error");
+    }
+  };
+
+  const ejecutarReprogramacion = async () => {
+    try {
+      const res = await reprogramarActividad(id, nuevaFechaRepro);
+
+      if (res.data.conflicto) {
+        setConflictoRepro(res.data);
+      } else {
+        setOpenReprogramar(false);
+        setNuevaFechaRepro("");
+        await fetchActividad();
+
+        showSnack(
+          `Actividad movida al ${formatFecha(nuevaFechaRepro)} correctamente`
+        );
+      }
+    } catch (error) {
+      showSnack("Error al reprogramar", "error");
+    }
+  };
 
   if (!actividad) {
   return (
@@ -189,7 +218,12 @@ function ActividadDetalle() {
               size="small"
               variant="outlined"
               startIcon={<EditIcon />}
-              onClick={() => setModoEdicion(!modoEdicion)}
+              onClick={() => {
+                if (!modoEdicion) {
+                  setActividadEdit(JSON.parse(JSON.stringify(actividad)));
+                }
+                setModoEdicion(!modoEdicion);
+              }}
             >
               {modoEdicion ? "Salir edición" : "Editar"}
             </Button>
@@ -201,32 +235,24 @@ function ActividadDetalle() {
                 color="success"
                 startIcon={<SaveIcon />}
                 onClick={async () => {
-                  try {
-                    // guardar subtareas
-                    for (const idSub in cambios) {
-                      await editarSubtarea(idSub, data);
-                    }
-
-                    // guardar actividad
-                  await editarActividad(id, {
-                    titulo: actividad.titulo,
-                    fecha: actividad.fecha,
-                    hora_inicio: actividad.hora_inicio,
-                    hora_fin: actividad.hora_fin,
-                    tipo: actividad.tipo,
-                    curso: actividad.curso,
-                  });
-
-                    setCambios({});
-                    setModoEdicion(false);
-                    fetchActividad();
-
-                  } catch (error) {
-                    alert("Error guardando cambios.");
+                try {
+                  // guardar subtareas correctamente
+                  for (const idSub in cambios) {
+                    await editarSubtarea(idSub, cambios[idSub]);
                   }
 
+                  // guardar actividad
+                  await editarActividad(id, actividadEdit);
+                  setActividad(actividadEdit);
+                  setCambios({});
+                  setModoEdicion(false);
+                  await fetchActividad();
                   showSnack("Cambios guardados correctamente");
-                }}
+
+                } catch (error) {
+                  showSnack("Error guardando cambios", "error");
+                }
+              }}
               >
                 Guardar cambios
               </Button>
@@ -241,9 +267,14 @@ function ActividadDetalle() {
               onClick={async () => {
                 try {
                     setLoadingPosponer(true);
-                    await posponerActividad(id);
+                    const res = await posponerActividad(id);
                     await fetchActividad();
-                    showSnack("Actividad pospuesta");
+
+                    const fechaNueva = formatFecha(res.data.nueva_fecha);
+
+                    showSnack(
+                      `Se movió automáticamente al ${fechaNueva} porque los días anteriores superaban tu límite diario`
+                    );
                   } catch {
                     showSnack("Error al posponer", "error");
                   } finally {
@@ -252,6 +283,15 @@ function ActividadDetalle() {
               }}
             >
               {loadingPosponer ? "Posponiendo..." : "Posponer actividad"}
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="info"
+              startIcon={<EventIcon />}
+              onClick={() => setOpenReprogramar(true)}
+            >
+              Reprogramar manual
             </Button>
             <Button
               size="small"
@@ -268,9 +308,9 @@ function ActividadDetalle() {
             <TextField
               fullWidth
               size="small"
-              value={actividad.titulo}
+              value={actividadEdit.titulo}
               onChange={(e) =>
-                setActividad({ ...actividad, titulo: e.target.value })
+                setActividadEdit({ ...actividadEdit, titulo: e.target.value })
               }
             />
           ) : (
@@ -284,9 +324,9 @@ function ActividadDetalle() {
                 <TextField
                   label="Curso"
                   size="small"
-                  value={actividad.curso}
+                  value={actividadEdit.curso}
                   onChange={(e) =>
-                    setActividad({ ...actividad, curso: e.target.value })
+                    setActividadEdit({ ...actividadEdit, curso: e.target.value })
                   }
                 />
               ) : (
@@ -300,9 +340,9 @@ function ActividadDetalle() {
                 <TextField
                   label="Tipo"
                   size="small"
-                  value={actividad.tipo}
+                  value={actividadEdit.tipo}
                   onChange={(e) =>
-                    setActividad({ ...actividad, tipo: e.target.value })
+                    setActividadEdit({ ...actividadEdit, tipo: e.target.value })
                   }
                 />
               ) : (
@@ -319,13 +359,13 @@ function ActividadDetalle() {
                 label="Fecha"
                 type="date"
                 size="small"
-                value={actividad.fecha}
+                value={actividadEdit.fecha}
                 onChange={(e) =>
-                  setActividad({ ...actividad, fecha: e.target.value })
+                  setActividadEdit({ ...actividadEdit, fecha: e.target.value })
                 }
               />
             ) : (
-              <Typography><b>Fecha:</b> {formatearFecha(actividad.fecha)}</Typography>
+              <Typography><b>Fecha:</b> {formatFecha(actividad.fecha)}</Typography>
             )}
           </Stack>
 
@@ -336,9 +376,9 @@ function ActividadDetalle() {
                 label="Hora inicio"
                 type="time"
                 size="small"
-                value={actividad.hora_inicio}
+                value={actividadEdit.hora_inicio}
                 onChange={(e) =>
-                  setActividad({ ...actividad, hora_inicio: e.target.value })
+                  setActividadEdit({ ...actividadEdit, hora_inicio: e.target.value })
                 }
               />
             ) : (
@@ -353,9 +393,9 @@ function ActividadDetalle() {
                 label="Hora fin"
                 type="time"
                 size="small"
-                value={actividad.hora_fin}
+                value={actividadEdit.hora_fin}
                 onChange={(e) =>
-                  setActividad({ ...actividad, hora_fin: e.target.value })
+                  setActividadEdit({ ...actividadEdit, hora_fin: e.target.value })
                 }
               />
             ) : (
@@ -365,7 +405,7 @@ function ActividadDetalle() {
         </Stack>
 
         <Typography variant="caption" color="text.secondary">
-          Creada el {formatearFecha(actividad.fecha_creacion)}
+          Creada el {formatFecha(actividad.fecha_creacion)}
         </Typography>
       </div>
 
@@ -381,43 +421,67 @@ function ActividadDetalle() {
         <div style={{ ...progressBar, width: `${progreso}%` }} />
       </div>
       {/* CREAR SUBTAREA */}
-      {mensaje && (
-        <div style={toast}>
-          {mensaje}
-        </div>
-      )}
       <Card sx={{ p: 2, mb: 2 }}>
         <div style={createBox}>
-          <input
-            placeholder="Título"
+          <TextField
+            label="Título"
+            size="small"
             value={nuevoTitulo}
-            onChange={(e) => setNuevoTitulo(e.target.value)}
-            style={inputCreate}
+            error={!!errores.titulo}
+            helperText={errores.titulo}
+            onChange={(e) => {
+              setNuevoTitulo(e.target.value);
+              setErrores((prev) => ({ ...prev, titulo: "" }));
+            }}
           />
 
-          <input
+          <TextField
             type="date"
+            size="small"
             value={nuevaFecha}
-            onChange={(e) => setNuevaFecha(e.target.value)}
-            style={inputCreate}
+            error={!!errores.fecha}
+            helperText={errores.fecha}
+            onChange={(e) => {
+              setNuevaFecha(e.target.value);
+              setErrores((prev) => ({ ...prev, fecha: "" }));
+            }}
           />
 
-          <input
+          <TextField
             type="number"
-            placeholder="Horas"
+            label="Horas"
+            size="small"
             value={nuevasHoras}
-            onChange={(e) => setNuevasHoras(e.target.value)}
-            style={inputCreate}
+            error={!!errores.horas}
+            helperText={errores.horas}
+            onChange={(e) => {
+              setNuevasHoras(e.target.value);
+              setErrores((prev) => ({ ...prev, horas: "" }));
+            }}
           />
 
-          <button  size="small" style={btnPrimary} onClick={handleCreate} >
+          <Button variant="contained" onClick={handleCreate}>
             ＋ Agregar
-          </button>
+          </Button>
         </div>
       </Card>
 
       {/* SUBTAREAS */}
-      {actividad.subtareas.map((t) => (
+      {(modoEdicion ? actividadEdit.subtareas : actividad.subtareas).length === 0 ? (
+
+        <div style={emptyState}>
+          <img src={imgvacio} alt="vacío" style={emptyImg} />
+          <Typography variant="h6" mt={2}>
+            No hay subtareas aún
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Agrega tu primera subtarea arriba 👆
+          </Typography>
+        </div>
+
+      ) : (
+
+  (modoEdicion ? actividadEdit.subtareas : actividad.subtareas).map((t) => (
       <Card key={t.id} sx={{ mb: 1, opacity: t.completada ? 0.6 : 1 }}>
   <CardContent
     sx={{
@@ -433,11 +497,13 @@ function ActividadDetalle() {
         <TextField
           fullWidth
           size="small"
-          value={t.titulo}
+          value={
+              actividadEdit.subtareas.find(s => s.id === t.id)?.titulo || ""
+            }
           onChange={(e) => {
             const value = e.target.value;
 
-            setActividad((prev) => ({
+            setActividadEdit((prev) => ({
               ...prev,
               subtareas: prev.subtareas.map((s) =>
                 s.id === t.id ? { ...s, titulo: value } : s
@@ -468,11 +534,13 @@ function ActividadDetalle() {
               key={t.id + "fecha"}
               type="date"
               size="small"
-              value={t.fecha_objetivo}
+              value={
+                actividadEdit.subtareas.find(s => s.id === t.id)?.fecha_objetivo || ""
+              }
               onChange={(e) => {
                 const value = e.target.value;
 
-                setActividad((prev) => ({
+                setActividadEdit((prev) => ({
                   ...prev,
                   subtareas: prev.subtareas.map((s) =>
                     s.id === t.id ? { ...s, fecha_objetivo: value } : s
@@ -490,11 +558,13 @@ function ActividadDetalle() {
               type="number"
               size="small"
               label="Horas"
-              value={t.horas}
+              value={
+                actividadEdit.subtareas.find(s => s.id === t.id)?.horas || ""
+              }
               onChange={(e) => {
                 const value = parseFloat(e.target.value);
 
-                setActividad((prev) => ({
+                setActividadEdit((prev) => ({
                   ...prev,
                   subtareas: prev.subtareas.map((s) =>
                     s.id === t.id ? { ...s, horas: value } : s
@@ -509,9 +579,14 @@ function ActividadDetalle() {
             />
           </>
         ) : (
-          <Typography variant="body2" color="text.secondary">
-            📅 {formatearFecha(t.fecha_objetivo)} • ⏰ {t.horas}h
-          </Typography>
+            <Box sx={{display: "flex", alignItems: "center", gap: "10px"}}>
+                  <Typography  sx={chipFecha}>
+                    {formatFecha(t.fecha_objetivo)}
+                  </Typography>
+                <Box sx={hoursBox}>
+                  ⏱ {formatHoras(t.horas)}
+                </Box>
+            </Box>
         )}
       </Stack>
     </Box>
@@ -544,7 +619,7 @@ function ActividadDetalle() {
     </Stack>
   </CardContent>
 </Card>
-))}
+)))}
 <Snackbar
   open={snack.open}
   autoHideDuration={3000}
@@ -576,6 +651,57 @@ function ActividadDetalle() {
     </Button>
     <Button color="error" onClick={confirmarDeleteActividad}>
       Eliminar todo
+    </Button>
+  </DialogActions>
+</Dialog>
+<Dialog open={openReprogramar} maxWidth="sm" fullWidth>
+  <DialogTitle>Reprogramar actividad</DialogTitle>
+  <DialogContent>
+    <TextField
+      fullWidth
+      type="date"
+      margin="normal"
+      value={nuevaFechaRepro}
+      onChange={(e) => setNuevaFechaRepro(e.target.value)}
+    />
+
+    {conflictoRepro && (
+      <Alert severity="warning" sx={{ mt: 2 }}>
+        <b>{conflictoRepro.mensaje}</b>
+        <br />
+        Horas actuales del día: {conflictoRepro.horas_actuales_dia}h
+        <br />
+        Horas a mover: {conflictoRepro.horas_a_mover}h
+        <br />
+        Límite diario: {conflictoRepro.limite}h
+        <br />
+        Exceso: {conflictoRepro.exceso}h
+        <br />
+        <br />
+        Opciones sugeridas:
+        <ul>
+          {conflictoRepro.opciones.map((op, i) => (
+            <li key={i}>{op}</li>
+          ))}
+        </ul>
+      </Alert>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button
+      onClick={() => {
+        setOpenReprogramar(false);
+        setConflictoRepro(null);
+      }}
+    >
+      Cancelar
+    </Button>
+    <Button
+      variant="contained"
+      onClick={ejecutarReprogramacion}
+      disabled={!nuevaFechaRepro}
+    >
+      Confirmar
     </Button>
   </DialogActions>
 </Dialog>
@@ -779,4 +905,22 @@ const toast = {
   marginBottom: "10px",
   textAlign: "center",
   fontSize: "0.9rem",
+};
+
+const chipFecha = {
+  background: "#E8F5E9",
+  color: "#2E7D32",
+  padding: "6px 10px",
+  borderRadius: "10px",
+  fontSize: "0.8rem",
+  fontWeight: "bold",
+};
+
+const hoursBox = {
+  background: "#E8F6F3",
+  color: "#2A9D8F",
+  padding: "6px 10px",
+  borderRadius: "10px",
+  fontSize: "0.8rem",
+  fontWeight: "bold",
 };

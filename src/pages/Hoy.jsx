@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getHoy } from "../services/actividadService";
 import { useNavigate } from "react-router-dom";
-import { completarSubtarea, posponerActividad } from "../services/actividadService";
+import { completarSubtarea } from "../services/actividadService";
 import {
   Card, CardContent, Typography, Chip,
   Button, Alert, Stack, ToggleButton, ToggleButtonGroup,
@@ -16,7 +16,7 @@ function Hoy() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [curso, setCurso] = useState("");
+  const [buscar, setBuscar] = useState("");
   const [filtro, setFiltro] = useState("todas");
 
 
@@ -26,7 +26,7 @@ const fetchData = () => {
   setLoading(true);
   setError(false);
 
-  getHoy(curso)
+  getHoy(buscar)
     .then((res) => setData(res.data))
     .catch(() => setError(true))
     .finally(() => setLoading(false));
@@ -35,7 +35,7 @@ const fetchData = () => {
 useEffect(() => {
   const delay = setTimeout(fetchData, 400);
   return () => clearTimeout(delay);
-}, [curso]);
+}, [buscar]);
 
   // 🟡 Loading (tu estilo)
   if (loading) {
@@ -131,9 +131,9 @@ const getTag = (tipo) => {
           ))}
 
           <input
-            placeholder="Buscar por curso..."
-            value={curso}
-            onChange={(e) => setCurso(e.target.value)}
+            placeholder="Buscar por actvidad, subatrea, curso..."
+            value={buscar}
+            onChange={(e) => setBuscar(e.target.value)}
             style={searchInputStyle}
           />
         </Box>
@@ -226,22 +226,37 @@ function Seccion({ titulo, tipo, data, navigate, color, visible, refresh }) {
           <Card key={grupo.actividad} sx={cardStyle}>
             <CardContent sx={cardContentStyle}>
 
-              {/* HEADER ACTIVIDAD */}
-              <Stack direction="row" alignItems="flex-start" spacing={2}>
-                {/* IZQUIERDA */}
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6">
-                    {grupo.actividad_titulo}
-                  </Typography>
+            {/* HEADER ACTIVIDAD PRO */}
+            <Stack spacing={1.2} sx={{ mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "#3A2E2A" }}>
+                {grupo.actividad_titulo}
+              </Typography>
 
-                  <Typography variant="body2" color="text.secondary">
-                    {grupo.curso}
-                  </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap">
+                <Chip
+                  label={grupo.curso}
+                  size="small"
+                  sx={chipCurso}
+                />
 
-                  <Box sx={tipoTag(tipo)}>
-                    {tipo.toUpperCase()}
-                  </Box>
+                <Chip
+                  label={grupo.items[0].tipo}
+                  size="small"
+                  sx={chipTipo}
+                />
+
+                <Chip
+                  icon={<ScheduleIcon />}
+                  label={formatFecha(grupo.items[0].fecha_actividad)}
+                  size="small"
+                  sx={chipFecha}
+                />
+
+                <Box sx={tipoTag(tipo)}>
+                  {tipo.toUpperCase()}
                 </Box>
+              </Stack>
+            </Stack>
 
                 {/* DERECHA (BOTONES) */}
                 <Stack direction="row" spacing={1}>
@@ -253,20 +268,7 @@ function Seccion({ titulo, tipo, data, navigate, color, visible, refresh }) {
                   >
                     Ver
                   </Button>
-
-                  <Button
-                    size="small"
-                    sx={posponerBtn}
-                    startIcon={<ScheduleIcon />}
-                    onClick={async () => {
-                      await posponerActividad(grupo.actividad);
-                      refresh();
-                    }}
-                  >
-                    Posponer
-                  </Button>
                 </Stack>
-              </Stack>
 
               {/* SUBTAREAS */}
               {grupo.items.map((t) => (
@@ -311,9 +313,11 @@ export default Hoy;
 //
 // 🎨 ESTILOS (reciclados y ajustados)
 //
-const formatFecha = (fecha) => {
-  const f = new Date(fecha);
-  return f.toLocaleDateString("es-CO", {
+const formatFecha = (fechaStr) => {
+  const [year, month, day] = fechaStr.split("-");
+  const date = new Date(year, month - 1, day);
+
+  return date.toLocaleDateString("es-CO", {
     day: "numeric",
     month: "short",
   });
@@ -468,18 +472,6 @@ const verBtn = {
   padding: "4px 10px",
 };
 
-const posponerBtn = {
-  textTransform: "none",
-  borderRadius: "8px",
-  background: "#FFE8D6",
-  color: "#E76F51",
-  fontSize: "0.8rem",
-  padding: "4px 10px",
-  "&:hover": {
-    background: "#fcd5ce",
-  },
-};
-
 const filtersRow = {
   display: "flex",
   gap: "10px",
@@ -503,4 +495,22 @@ const searchInputStyle = {
   padding: "8px 14px",
   borderRadius: "20px",
   border: "1px solid #ddd",
+};
+
+const chipCurso = {
+  background: "#FFF3E0",
+  color: "#E65100",
+  fontWeight: 600,
+};
+
+const chipTipo = {
+  background: "#E3F2FD",
+  color: "#1565C0",
+  fontWeight: 600,
+};
+
+const chipFecha = {
+  background: "#E8F5E9",
+  color: "#2E7D32",
+  fontWeight: 600,
 };
