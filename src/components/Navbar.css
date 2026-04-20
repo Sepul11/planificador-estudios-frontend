@@ -17,6 +17,8 @@
 }
 
 .logo {
+  display: flex;
+  align-items: center;
   color: #FFF4E2;
   font-weight: 700;
   font-size: 20px;
@@ -68,7 +70,24 @@
 .profile-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+
+  padding: 8px 16px; /* 🔥 igual que los links */
+  border-radius: 8px;
+
+  border: 2px solid transparent;
+
+  color: #FDE4BC;
+  font-weight: 500;
+
+  transition: all 0.25s ease;
+}
+
+.profile-btn:hover {
+  border: 2px solid #D3AB80;
+  background-color: rgba(255, 244, 226, 0.1);
+  transform: translateY(-2px);
+  color: #FDE4BC;
 }
 
 .profile-dropdown {

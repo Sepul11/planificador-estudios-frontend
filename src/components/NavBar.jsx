@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getPerfil } from "../services/perfilService";
 import "./Navbar.css";
+import logo from "../assets/logo.png";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
@@ -39,7 +40,10 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      <h2 className="logo">Planificador de estudios</h2>
+      <div className="logo">
+        <img src={logo} alt="logo" style={{ height: "60px", width: "auto"}}/>
+        Planificador de estudios
+      </div>
 
       <div className="nav-links">
         <Link to="/menu">Menu</Link>
@@ -53,26 +57,40 @@ function Navbar() {
           <div
             className="nav-link profile-btn"
             onClick={() => setOpen(!open)}
+            style={profileBtn}
           >
-            👤 {user?.first_name} • {user?.limite_diario}h
+            <div style={avatarSmall}>
+              {user?.first_name?.charAt(0).toUpperCase()}
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              <span style={nameText}>{user?.first_name}</span>
+              <span style={subText}>{user?.limite_diario}h/día</span>
+            </div>
           </div>
 
           {open && (
-            <div className="profile-dropdown">
-              <div className="dropdown-header">
-                {user?.email}
+            <div style={dropdown}>
+              
+              <div style={dropdownHeader}>
+                <div style={avatarBig}>
+                  {user?.first_name?.charAt(0).toUpperCase()}
+                </div>
+
+                <div>
+                  <strong>{user?.first_name}</strong>
+                  <p style={emailText}>{user?.email}</p>
+                </div>
               </div>
 
-              <Link to="/perfil" className="dropdown-item">
+              <Link to="/perfil" style={item}>
                 Ver perfil
               </Link>
 
-              <div
-                className="dropdown-item logout"
-                onClick={handleLogout}
-              >
+              <div style={item} onClick={handleLogout}>
                 Cerrar sesión
               </div>
+
             </div>
           )}
         </div>
@@ -80,5 +98,82 @@ function Navbar() {
     </nav>
   );
 }
+
+const profileBtn = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  cursor: "pointer"
+};
+
+const avatarSmall = {
+  width: "35px",
+  height: "35px",
+  borderRadius: "50%",
+  backgroundColor: "#d4a373",
+  color: "white",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontWeight: "bold"
+};
+
+const avatarBig = {
+  width: "45px",
+  height: "45px",
+  borderRadius: "50%",
+  backgroundColor: "#d4a373",
+  color: "white",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontWeight: "bold"
+};
+
+const nameText = {
+  fontSize: "14px",
+  fontWeight: "600"
+};
+
+const subText = {
+  fontSize: "12px",
+  color: "#666"
+};
+
+const dropdown = {
+  position: "absolute",
+  top: "60px",
+  right: "0",
+  background: "white",
+  borderRadius: "12px",
+  boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+  padding: "10px",
+  minWidth: "200px",
+  zIndex: 100
+};
+
+const dropdownHeader = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  paddingBottom: "10px",
+  borderBottom: "1px solid #eee",
+  marginBottom: "10px"
+};
+
+const emailText = {
+  fontSize: "12px",
+  color: "gray",
+  margin: 0
+};
+
+const item = {
+  display: "block",
+  padding: "10px",
+  borderRadius: "8px",
+  cursor: "pointer",
+  textDecoration: "none",
+  color: "black"
+};
 
 export default Navbar;

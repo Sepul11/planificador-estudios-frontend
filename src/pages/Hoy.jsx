@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getHoy } from "../services/actividadService";
+import { getHoy } from "../services/actividadservice.js";
 import { useNavigate } from "react-router-dom";
-import { completarSubtarea } from "../services/actividadService";
+import { completarSubtarea } from "../services/actividadservice.js";
 import {
   Card, CardContent, Typography, Chip,
   Button, Alert, Stack, ToggleButton, ToggleButtonGroup,

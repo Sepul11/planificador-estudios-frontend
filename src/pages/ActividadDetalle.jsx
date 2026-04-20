@@ -10,7 +10,7 @@ import {
   editarActividad,
   eliminarActividad,
   reprogramarActividad
-} from "../services/actividadService";
+} from "../services/actividadservice.js";
 import EditIcon from "@mui/icons-material/Edit";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import {
