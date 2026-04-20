@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import logo from "../assets/logo.png";
-import { crearActividad } from "../services/actividadService";
+import { crearActividad } from "../services/actividadservice.js";
 
 function CrearActividad() {
   const navigate = useNavigate();
