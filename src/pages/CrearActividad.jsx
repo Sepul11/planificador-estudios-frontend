@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box, Button, Divider, Chip, TextField, Typography 
+  Box, Button, Divider, Chip, TextField, Typography, Snackbar, Alert 
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import logo from "../assets/logo.png";
@@ -29,16 +29,16 @@ function CrearActividad() {
   const [errores, setErrores] = useState({});
   const [errorSub, setErrorSub] = useState({});
   const [loading, setLoading] = useState(false);
+  const [snack, setSnack] = useState({
+    open: false,
+    message: "",
+    severity: "error", // error | success | warning | info
+  });
 
   function agregarSubtarea() {
 
     const erroresSub = {};
 
-    const duracionActividad = calcularDuracionActividad();
-
-    const totalSubtareas =
-      subtareas.reduce((total, s) => total + Number(s.horas), 0) +
-      Number(subHoras);
 
     if (!subTitulo.trim()) {
       erroresSub.subTitulo = "La subtarea necesita un nombre";
@@ -49,10 +49,6 @@ function CrearActividad() {
 
     if (subFecha && fecha && subFecha < fecha) {
       erroresSub.subFecha = "No puede ser antes de la actividad";
-    }
-
-    if (duracionActividad && totalSubtareas > duracionActividad) {
-      erroresSub.subHoras = `Supera duración actividad (${duracionActividad}h)`;
     }
 
     if (Object.keys(erroresSub).length > 0) {
@@ -110,34 +106,29 @@ function CrearActividad() {
       return Object.keys(nuevosErrores).length === 0;
     }
 
-    function calcularDuracionActividad() {
-      if (!horaInicio || !horaFin) return null;
 
-      const [h1, m1] = horaInicio.split(":").map(Number);
-      const [h2, m2] = horaFin.split(":").map(Number);
-
-      const inicio = h1 * 60 + m1;
-      const fin = h2 * 60 + m2;
-
-      return (fin - inicio) / 60;
-    }
-
+  function showSnack(message, severity = "error") {
+    setSnack({
+      open: true,
+      message,
+      severity,
+    });
+  }
 
   async function guardarActividad() {
     if (!validarFormulario()) {
+      showSnack("Revisa los campos obligatorios");
       return;
     }
     if (subTitulo || subFecha || subHoras) {
-      setErrorSub({
-        subTitulo: "Debes agregar la subtarea antes de guardar"
-      });
+      showSnack("Debes agregar la subtarea antes de guardar");
       return;
     }
 
     const actividadData = {
       titulo,
       curso,
-      tipo,
+      tipo: tipo || null,
       descripcion,
       fecha,
       hora_inicio: horaInicio + ":00",
@@ -155,20 +146,17 @@ function CrearActividad() {
           state: { mensaje: "Actividad creada con éxito ✅" }
         });
       } catch (error) {
-        alert("Error conectando con el servidor");
-        console.error(error);
-      } finally {
+          console.error(error);
+
+          if (error.response?.data) {
+            const errores = Object.values(error.response.data).flat().join(" ");
+            showSnack(errores);
+          } else {
+            showSnack("Error conectando con el servidor");
+          }
+        }finally {
         setLoading(false);
       }
-/*
-    try {
-      setLoading(true);
-      const res = await crearActividad(actividadData);
-      navigate(`/actividad/${res.data.id}`);
-    } finally {
-      setLoading(false);
-    }
-  };*/
 
   }
   if (loading) {
@@ -198,14 +186,43 @@ const formatHoras = (h) => {
 
   return (
     <div style={{ ...container, paddingTop: "70px" }}>
+      
       <h1 style={title}>Crear actividad</h1>
 
       <div style={card}>
         {/* Actividad */}
-          <TextField label="Título" fullWidth value={titulo} onChange={e=>setTitulo(e.target.value)} />
-          <TextField label="Curso" fullWidth value={curso} onChange={e=>setCurso(e.target.value)} />
-          <TextField label="Tipo" fullWidth value={tipo} onChange={e=>setTipo(e.target.value)} />
-          <TextField label="Descripción" multiline rows={3} fullWidth value={descripcion} onChange={e=>setDescripcion(e.target.value)} />
+          <TextField
+            label="Título"
+            fullWidth
+            value={titulo}
+            onChange={e=>setTitulo(e.target.value)}
+            error={!!errores.titulo}
+            helperText={errores.titulo}
+            sx={muiInputSx}
+          />
+          <TextField
+            label="Curso"
+            fullWidth
+            value={curso}
+            onChange={e=>setCurso(e.target.value)}
+            sx={muiInputSx}
+          />
+          <TextField
+            label="Tipo"
+            fullWidth
+            value={tipo}
+            onChange={e=>setTipo(e.target.value)}
+            sx={muiInputSx}
+          />
+          <TextField
+            label="Descripción"
+            multiline
+            rows={3}
+            fullWidth
+            value={descripcion}
+            onChange={e=>setDescripcion(e.target.value)}
+            sx={muiInputSx}
+          />
 
         <div style={timeGroup}>
         <label style={label}>Fecha</label>
@@ -342,6 +359,24 @@ const formatHoras = (h) => {
         </button>
         
       </div>
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={() => setSnack({ ...snack, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={snack.severity}
+          sx={{
+            background: "#472825",
+            color: "white",
+            fontWeight: "bold",
+            borderRadius: "12px",
+          }}
+        >
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
@@ -499,6 +534,21 @@ const chip = {
   fontSize: "0.8rem",
   color: "#472825",
   fontWeight: "500",
+};
+
+const muiInputSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "10px",
+    "& fieldset": {
+      borderColor: "#D3AB80",
+    },
+    "&:hover fieldset": {
+      borderColor: "#c49a6c",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "#472825",
+    },
+  },
 };
 
 export default CrearActividad;

@@ -1,26 +1,39 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getPerfil } from "../services/perfilService";
 import "./Navbar.css";
 
 function Navbar() {
-
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const ref = useRef();
 
-  // cargar usuario desde localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    async function cargarPerfil() {
+      try {
+      const data = await getPerfil();
+       setUser(data);
+      } catch (e) {
+        console.log(e);
+      }
     }
+    cargarPerfil();
   }, []);
 
-  // logout real
+  // cerrar dropdown al hacer click afuera
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
     navigate("/login");
   };
 
@@ -36,32 +49,33 @@ function Navbar() {
         <Link to="/calendario">Calendario</Link>
 
         {/* Perfil */}
-        <div className="profile-container">
-          <button 
-            className="profile-btn"
+        <div className="profile-container" ref={ref}>
+          <div
+            className="nav-link profile-btn"
             onClick={() => setOpen(!open)}
           >
-            👤 {user ? user.email : "Invitado"}
-          </button>
+            👤 {user?.first_name} • {user?.limite_diario}h
+          </div>
 
-          {open && user && (
+          {open && (
             <div className="profile-dropdown">
-              <p><strong>{user.email}</strong></p>
+              <div className="dropdown-header">
+                {user?.email}
+              </div>
 
-              <hr />
+              <Link to="/perfil" className="dropdown-item">
+                Ver perfil
+              </Link>
 
-              <Link to="/perfil">Ver perfil</Link>
-              <Link 
-                to="/login" 
-                className="dropdown-item"
+              <div
+                className="dropdown-item logout"
                 onClick={handleLogout}
               >
                 Cerrar sesión
-              </Link>
+              </div>
             </div>
           )}
         </div>
-
       </div>
     </nav>
   );

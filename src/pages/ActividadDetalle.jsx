@@ -80,10 +80,16 @@ function ActividadDetalle() {
   }, []);
 
   const formatFecha = (fechaStr) => {
-    const [year, month, day] = fechaStr.split("-");
-    return new Date(year, month - 1, day).toLocaleDateString("es-CO", {
+    if (!fechaStr) return "";
+
+    const date = new Date(fechaStr);
+
+    if (isNaN(date)) return "";
+
+    return date.toLocaleDateString("es-CO", {
       day: "numeric",
       month: "short",
+      year: "numeric",
     });
   };
   const formatHoras = (h) => {
@@ -213,7 +219,8 @@ function ActividadDetalle() {
       <div style={header}>
         <div style={headerTop}>
           <img src={logo} alt="logo" style={logoStyle} />
-          <Stack direction="row" spacing={2}>
+          <h1 style={title}>Informacion de tu actividad</h1>
+          <Stack direction="row" spacing={2} sx={{ flexWrap: "wrap", justifyContent: "flex-end" }}>
             <Button
               size="small"
               variant="outlined"
@@ -304,7 +311,23 @@ function ActividadDetalle() {
           </Stack>
         </div>
 
-        {modoEdicion ? (
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "1.1fr 0.9fr",
+              gap: 4,
+              alignItems: "start",
+              mt: 3,
+            }}
+          >
+          <Box sx={{
+            background: "white",
+            padding: "2rem",
+            borderRadius: "14px",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+          }}>
+          {modoEdicion ? (
             <TextField
               fullWidth
               size="small"
@@ -316,6 +339,26 @@ function ActividadDetalle() {
           ) : (
             <h1>{actividad.titulo}</h1>
           )}
+
+          {modoEdicion ? (
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Descripción"
+                value={actividadEdit.descripcion || ""}
+                onChange={(e) =>
+                  setActividadEdit({ ...actividadEdit, descripcion: e.target.value })
+                }
+                sx={{ mt: 2 }}
+              />
+            ) : (
+              actividad.descripcion && (
+                <Typography sx={{ mt: 2, color: "#555" }}>
+                  {actividad.descripcion}
+                </Typography>
+              )
+            )}
 
           <Stack spacing={1} mt={2}>
             <Stack direction="row" spacing={1} alignItems="center">
@@ -407,21 +450,181 @@ function ActividadDetalle() {
         <Typography variant="caption" color="text.secondary">
           Creada el {formatFecha(actividad.fecha_creacion)}
         </Typography>
-      </div>
+          <Box>
+          </Box>
+            {/* PROGRESO */}
+            <p style={progressText}>
+              {progreso === 100
+                ? "🔥 Completado"
+                : progreso === 0
+                ? "Empieza ahora"
+                : `Progreso: ${progreso}%`}
+            </p>
+          <div style={progressContainer}>
+            <div style={{ ...progressBar, width: `${progreso}%` }} />
+          </div>
+          </Box>
+          <Box sx={{
+              background: "white",
+              padding: "1.5rem",
+              borderRadius: "14px",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+            }}>
+            {(modoEdicion ? actividadEdit.subtareas : actividad.subtareas).length === 0 ? (
 
-      {/* PROGRESO */}
-        <p style={progressText}>
-          {progreso === 100
-            ? "🔥 Completado"
-            : progreso === 0
-            ? "Empieza ahora"
-            : `Progreso: ${progreso}%`}
-        </p>
-      <div style={progressContainer}>
-        <div style={{ ...progressBar, width: `${progreso}%` }} />
-      </div>
-      {/* CREAR SUBTAREA */}
-      <Card sx={{ p: 2, mb: 2 }}>
+                  <div style={emptyState}>
+                    <img src={imgvacio} alt="vacío" style={emptyImg} />
+                    <Typography variant="h6" mt={2}>
+                      No hay subtareas aún
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Agrega tu primera subtarea arriba 👆
+                    </Typography>
+                  </div>
+
+                ) : (
+
+            (modoEdicion ? actividadEdit.subtareas : actividad.subtareas).map((t) => (
+                <Card key={t.id} sx={{ mb: 1, opacity: t.completada ? 0.6 : 1 }}>
+            <CardContent
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              {/* IZQUIERDA */}
+              <Box sx={{ flex: 1 }}>
+                {modoEdicion ? (
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={
+                        actividadEdit.subtareas.find(s => s.id === t.id)?.titulo || ""
+                      }
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setActividadEdit((prev) => ({
+                        ...prev,
+                        subtareas: prev.subtareas.map((s) =>
+                          s.id === t.id ? { ...s, titulo: value } : s
+                        ),
+                      }));
+
+                      setCambios((prev) => ({
+                        ...prev,
+                        [t.id]: { ...prev[t.id], titulo: value },
+                      }));
+                    }}
+                  />
+                ) : (
+                  <Typography
+                    sx={{
+                      textDecoration: t.completada ? "line-through" : "none",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {t.titulo}
+                  </Typography>
+                )}
+
+                <Stack direction="row" spacing={2} mt={1}>
+                  {modoEdicion ? (
+                    <>
+                      <TextField
+                        key={t.id + "fecha"}
+                        type="date"
+                        size="small"
+                        value={
+                          actividadEdit.subtareas.find(s => s.id === t.id)?.fecha_objetivo || ""
+                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          setActividadEdit((prev) => ({
+                            ...prev,
+                            subtareas: prev.subtareas.map((s) =>
+                              s.id === t.id ? { ...s, fecha_objetivo: value } : s
+                            ),
+                          }));
+
+                          setCambios((prev) => ({
+                            ...prev,
+                            [t.id]: { ...prev[t.id], fecha_objetivo: value },
+                          }));
+                        }}
+                      />
+                      <TextField
+                        key={t.id + "horas"}
+                        type="number"
+                        size="small"
+                        label="Horas"
+                        value={
+                          actividadEdit.subtareas.find(s => s.id === t.id)?.horas || ""
+                        }
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value);
+
+                          setActividadEdit((prev) => ({
+                            ...prev,
+                            subtareas: prev.subtareas.map((s) =>
+                              s.id === t.id ? { ...s, horas: value } : s
+                            ),
+                          }));
+
+                          setCambios((prev) => ({
+                            ...prev,
+                            [t.id]: { ...prev[t.id], horas: value },
+                          }));
+                        }}
+                      />
+                    </>
+                  ) : (
+                      <Box sx={{display: "flex", alignItems: "center", gap: "10px"}}>
+                            <Typography  sx={chipFecha}>
+                              {formatFecha(t.fecha_objetivo)}
+                            </Typography>
+                          <Box sx={hoursBox}>
+                            ⏱ {formatHoras(t.horas)}
+                          </Box>
+                      </Box>
+                  )}
+                </Stack>
+              </Box>
+
+              {/* DERECHA */}
+              <Stack direction="row" spacing={2}>
+                {!modoEdicion && (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    onClick={() => handleToggle(t)}
+                  >
+                    {t.completada ? "Deshacer" : "Completar"}
+                  </Button>
+                )}
+
+                {modoEdicion && (
+                  <>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDelete(t.id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+          )))}
+          <Box>
+             <Card sx={{ p: 2, mb: 2 }}>
         <div style={createBox}>
           <TextField
             label="Título"
@@ -465,161 +668,11 @@ function ActividadDetalle() {
           </Button>
         </div>
       </Card>
+        </Box>
+      </Box>
+      </Box>
+      </div>
 
-      {/* SUBTAREAS */}
-      {(modoEdicion ? actividadEdit.subtareas : actividad.subtareas).length === 0 ? (
-
-        <div style={emptyState}>
-          <img src={imgvacio} alt="vacío" style={emptyImg} />
-          <Typography variant="h6" mt={2}>
-            No hay subtareas aún
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Agrega tu primera subtarea arriba 👆
-          </Typography>
-        </div>
-
-      ) : (
-
-  (modoEdicion ? actividadEdit.subtareas : actividad.subtareas).map((t) => (
-      <Card key={t.id} sx={{ mb: 1, opacity: t.completada ? 0.6 : 1 }}>
-  <CardContent
-    sx={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 2,
-    }}
-  >
-    {/* IZQUIERDA */}
-    <Box sx={{ flex: 1 }}>
-      {modoEdicion ? (
-        <TextField
-          fullWidth
-          size="small"
-          value={
-              actividadEdit.subtareas.find(s => s.id === t.id)?.titulo || ""
-            }
-          onChange={(e) => {
-            const value = e.target.value;
-
-            setActividadEdit((prev) => ({
-              ...prev,
-              subtareas: prev.subtareas.map((s) =>
-                s.id === t.id ? { ...s, titulo: value } : s
-              ),
-            }));
-
-            setCambios((prev) => ({
-              ...prev,
-              [t.id]: { ...prev[t.id], titulo: value },
-            }));
-          }}
-        />
-      ) : (
-        <Typography
-          sx={{
-            textDecoration: t.completada ? "line-through" : "none",
-            fontWeight: 500,
-          }}
-        >
-          {t.titulo}
-        </Typography>
-      )}
-
-      <Stack direction="row" spacing={2} mt={1}>
-        {modoEdicion ? (
-          <>
-            <TextField
-              key={t.id + "fecha"}
-              type="date"
-              size="small"
-              value={
-                actividadEdit.subtareas.find(s => s.id === t.id)?.fecha_objetivo || ""
-              }
-              onChange={(e) => {
-                const value = e.target.value;
-
-                setActividadEdit((prev) => ({
-                  ...prev,
-                  subtareas: prev.subtareas.map((s) =>
-                    s.id === t.id ? { ...s, fecha_objetivo: value } : s
-                  ),
-                }));
-
-                setCambios((prev) => ({
-                  ...prev,
-                  [t.id]: { ...prev[t.id], fecha_objetivo: value },
-                }));
-              }}
-            />
-            <TextField
-              key={t.id + "horas"}
-              type="number"
-              size="small"
-              label="Horas"
-              value={
-                actividadEdit.subtareas.find(s => s.id === t.id)?.horas || ""
-              }
-              onChange={(e) => {
-                const value = parseFloat(e.target.value);
-
-                setActividadEdit((prev) => ({
-                  ...prev,
-                  subtareas: prev.subtareas.map((s) =>
-                    s.id === t.id ? { ...s, horas: value } : s
-                  ),
-                }));
-
-                setCambios((prev) => ({
-                  ...prev,
-                  [t.id]: { ...prev[t.id], horas: value },
-                }));
-              }}
-            />
-          </>
-        ) : (
-            <Box sx={{display: "flex", alignItems: "center", gap: "10px"}}>
-                  <Typography  sx={chipFecha}>
-                    {formatFecha(t.fecha_objetivo)}
-                  </Typography>
-                <Box sx={hoursBox}>
-                  ⏱ {formatHoras(t.horas)}
-                </Box>
-            </Box>
-        )}
-      </Stack>
-    </Box>
-
-    {/* DERECHA */}
-    <Stack direction="row" spacing={2}>
-      {!modoEdicion && (
-        <Button
-          size="small"
-          variant="contained"
-          color="success"
-          size="small"
-          onClick={() => handleToggle(t)}
-        >
-          {t.completada ? "Deshacer" : "Completar"}
-        </Button>
-      )}
-
-      {modoEdicion && (
-        <>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => handleDelete(t.id)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </>
-      )}
-    </Stack>
-  </CardContent>
-</Card>
-)))}
 <Snackbar
   open={snack.open}
   autoHideDuration={3000}
@@ -724,11 +777,7 @@ const pageWrapper = {
 
 const container = {
   padding: "100px 2rem 2rem 2rem",
-  maxWidth: "700px",
-  margin: "0 auto", // Centra el bloque de contenido
-  background: "white",
-  borderRadius: "12px",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  width: "100%",
 };
 
 const header = {
@@ -847,7 +896,7 @@ const subtaskCard = {
 const headerTop = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
+  alignItems: "flex-start",
 };
 
 const logoStyle = {
@@ -855,7 +904,9 @@ const logoStyle = {
 };
 
 const title = {
-  margin: "10px 0 0 0",
+  textAlign: "center",
+  marginBottom: "2rem",
+  color: "#472825",
 };
 
 const btnPosponer = {

@@ -45,13 +45,6 @@ function LoginCard() {
 
         localStorage.setItem("token", data.token);
 
-        // guardar usuario
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            email: email
-          })
-        );
 
         toast.success("Inicio de sesión exitoso");
 
