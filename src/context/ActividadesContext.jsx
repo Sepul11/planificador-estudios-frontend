@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getActividades } from "../services/actividadService";
+import { getActividades } from "../services/actividadservice.js";
 
 const ActividadesContext = createContext();
 
