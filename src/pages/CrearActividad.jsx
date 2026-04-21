@@ -47,10 +47,6 @@ function CrearActividad() {
       erroresSub.subHoras = "Las horas deben ser mayores a 0";
     }
 
-    if (subFecha && fecha && subFecha < fecha) {
-      erroresSub.subFecha = "No puede ser antes de la actividad";
-    }
-
     if (Object.keys(erroresSub).length > 0) {
       setErrorSub(erroresSub);
       return;

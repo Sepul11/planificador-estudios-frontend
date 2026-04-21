@@ -24,76 +24,77 @@ function Perfil() {
   if (!perfil) return <p style={{ padding: "120px", textAlign: "center" }}>Cargando...</p>;
 
   return (
-    <div style={container}>
+    <div style={page}>
 
-      {/* HEADER */}
-      <div style={header}>
-        <div style={avatar}>
-          {perfil.first_name?.charAt(0).toUpperCase()}
+      <div style={mainCard}>
+
+        {/* HEADER */}
+        <div style={header}>
+          <div style={avatar}>
+            {perfil.first_name?.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h2 style={{ margin: 0 }}>{perfil.first_name}</h2>
+            <p style={email}>{perfil.email}</p>
+          </div>
         </div>
-        <div>
-          <h2 style={{ margin: 0 }}>{perfil.first_name}</h2>
-          <p style={email}>{perfil.email}</p>
-        </div>
-      </div>
 
-      {/* CONFIG */}
-      <div style={card}>
-        <h3>Configuración de estudio</h3>
+        {/* CONFIG */}
+        <div style={card}>
+          <h3>Configuración de estudio</h3>
 
-        <label>Horas por día</label>
-        <input
-          type="range"
-          min="1"
-          max="16"
-          value={horas}
-          onChange={(e) => setHoras(e.target.value)}
-          style={slider}
-        />
-        <span style={value}>{horas} horas</span>
-      </div>
-
-      {/* OBJETIVO */}
-      <div style={card}>
-        <h3>Objetivo semanal</h3>
-
-        <input
-          type="number"
-          value={objetivo}
-          onChange={(e) => setObjetivo(e.target.value)}
-          style={input}
-        />
-        <p style={hint}>Horas por semana</p>
-      </div>
-
-      {/* PREFERENCIAS */}
-      <div style={card}>
-        <h3>Preferencias</h3>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <label>Horas por día</label>
           <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={() => setDarkMode(!darkMode)}
+            type="range"
+            min="1"
+            max="16"
+            value={horas}
+            onChange={(e) => setHoras(e.target.value)}
+            style={slider}
           />
-          <span>Modo oscuro</span>
+          <span style={value}>{horas} horas</span>
         </div>
-      </div>
 
-      <button style={button} onClick={guardar}>
-        Guardar cambios
-      </button>
+        {/* OBJETIVO */}
+        <div style={card}>
+          <h3>Objetivo semanal</h3>
+
+          <input
+            type="number"
+            value={objetivo}
+            onChange={(e) => setObjetivo(e.target.value)}
+            style={input}
+          />
+          <p style={hint}>Horas por semana</p>
+        </div>
+
+        <button style={button} onClick={guardar}>
+          Guardar cambios
+        </button>
+
+      </div>
     </div>
   );
 }
 
 export default Perfil;
 
-const container = {
-  maxWidth: "500px",
-  margin: "100px auto",
-  padding: "20px",
-  fontFamily: "sans-serif"
+const page = {
+  background: "#FFF4E2",
+  minHeight: "94vh",
+  display: "flex",
+  justifyContent: "center", 
+  alignItems: "center", 
+  padding: "20px"
+};
+const mainCard = {
+  width: "100%",
+  maxWidth: "520px",
+  maxHeight: "53vh",
+  background: "#ffffff",
+  padding: "25px",
+  borderRadius: "18px",
+  boxShadow: "0 12px 30px rgba(0,0,0,0.1)"
 };
 
 const header = {
@@ -123,11 +124,11 @@ const email = {
 };
 
 const card = {
-  background: "white",
-  padding: "20px",
-  marginBottom: "20px",
-  borderRadius: "14px",
-  boxShadow: "0 6px 15px rgba(0,0,0,0.05)"
+  background: "#FFF",
+  padding: "18px",
+  marginBottom: "18px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
 };
 
 const input = {
@@ -150,17 +151,19 @@ const value = {
 };
 
 const hint = {
-  fontSize: "0.85rem",
-  color: "gray"
+  display: "block",
+  marginTop: "5px",
+  fontWeight: "bold"
 };
 
 const button = {
   width: "100%",
-  padding: "12px",
-  borderRadius: "10px",
+  padding: "14px",
+  borderRadius: "12px",
   border: "none",
-  backgroundColor: "#d4a373",
-  color: "white",
-  fontWeight: "bold",
-  cursor: "pointer"
+  backgroundColor: "#D3AB80",
+  color: "#472825",
+  fontWeight: "600",
+  cursor: "pointer",
+  transition: "0.2s"
 };
