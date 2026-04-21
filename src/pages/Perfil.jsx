@@ -1,33 +1,54 @@
 import { useEffect, useState } from "react";
 import { getPerfil, updatePerfil } from "../services/perfilService";
+import { Snackbar, Alert } from "@mui/material"; // Añadimos Alert para que se vea mejor
 
 function Perfil() {
   const [perfil, setPerfil] = useState(null);
   const [horas, setHoras] = useState(6);
   const [objetivo, setObjetivo] = useState(20);
-  const [darkMode, setDarkMode] = useState(false);
+  const [snack, setSnack] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   useEffect(() => {
     async function cargar() {
-      const data = await getPerfil();
-      setPerfil(data);
-      setHoras(data.limite_diario);
+      try {
+        const data = await getPerfil();
+        setPerfil(data);
+        setHoras(data.limite_diario || 6);
+      } catch (error) {
+        showSnack("Error al cargar el perfil", "error");
+      }
     }
     cargar();
   }, []);
 
+  // Función para cerrar el snackbar
+  const handleCloseSnack = () => {
+    setSnack({ ...snack, open: false });
+  };
+
+  const showSnack = (message, severity = "success") => {
+    setSnack({ open: true, message, severity });
+  };
+
   const guardar = async () => {
-    await updatePerfil({ limite_diario: horas });
-    alert("Perfil actualizado");
+    try {
+      const response = await updatePerfil({ limite_diario: horas });
+      setPerfil(response); // Actualizamos el estado con la respuesta del servidor
+      showSnack("¡Cambios guardados con éxito!");
+    } catch (error) {
+      showSnack("Error al actualizar el perfil", "error");
+    }
   };
 
   if (!perfil) return <p style={{ padding: "120px", textAlign: "center" }}>Cargando...</p>;
 
   return (
     <div style={page}>
-
       <div style={mainCard}>
-
         {/* HEADER */}
         <div style={header}>
           <div style={avatar}>
@@ -42,7 +63,6 @@ function Perfil() {
         {/* CONFIG */}
         <div style={card}>
           <h3>Configuración de estudio</h3>
-
           <label>Horas por día</label>
           <input
             type="range"
@@ -58,7 +78,6 @@ function Perfil() {
         {/* OBJETIVO */}
         <div style={card}>
           <h3>Objetivo semanal</h3>
-
           <input
             type="number"
             value={objetivo}
@@ -71,8 +90,24 @@ function Perfil() {
         <button style={button} onClick={guardar}>
           Guardar cambios
         </button>
-
       </div>
+
+      {/* --- EL SNACKBAR --- */}
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnack}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert 
+          onClose={handleCloseSnack} 
+          severity={snack.severity} 
+          sx={{ width: "100%" }}
+          variant="filled"
+        >
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }
@@ -81,6 +116,10 @@ export default Perfil;
 
 const page = {
   background: "#FFF4E2",
+  paddingTop: "50px",
+  paddingRight: "2rem",
+  paddingBottom: "2rem",
+  paddingLeft: "2rem",
   minHeight: "94vh",
   display: "flex",
   justifyContent: "center", 
@@ -90,7 +129,6 @@ const page = {
 const mainCard = {
   width: "100%",
   maxWidth: "520px",
-  maxHeight: "53vh",
   background: "#ffffff",
   padding: "25px",
   borderRadius: "18px",
