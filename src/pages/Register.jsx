@@ -13,6 +13,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import toast, { Toaster } from "react-hot-toast";
 
 function Register() {
   const navigate = useNavigate();
@@ -38,6 +39,11 @@ function Register() {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
+
+  if (!form.nombre || !form.email || !form.password || !form.confirmPassword) {
+    toast.error("Debes completar todos los campos");
+    return;
+  }
 
   if (form.password !== form.confirmPassword) {
     alert("Las contraseñas no coinciden");
@@ -68,7 +74,7 @@ function Register() {
 
     if (!response.ok) {
       setLoading(false);
-      alert(data.error || "Error al registrar usuario");
+      toast.error(data.error || "Error al registrar usuario");
       return;
     }
 
@@ -83,12 +89,13 @@ function Register() {
   } catch (error) {
     console.error(error);
     setLoading(false);
-    alert("Error conectando con el servidor");
+    toast.error("Error conectando con el servidor");
   }
 };
 
 return (
   <>
+    <Toaster position="top-center" />
     {loading && <LoadingOverlay message={loadingMessage} />}
 
     <div style={layout}>
