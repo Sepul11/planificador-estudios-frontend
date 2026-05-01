@@ -137,7 +137,7 @@ const nameText = {
 
 const subText = {
   fontSize: "12px",
-  color: "#666"
+  color: "#d4a373"
 };
 
 const dropdown = {

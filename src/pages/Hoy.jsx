@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getHoy } from "../services/actividadservice.js";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { completarSubtarea } from "../services/actividadservice.js";
 import {
   Card, CardContent, Typography, Chip,
@@ -21,6 +22,7 @@ function Hoy() {
 
 
   const navigate = useNavigate();
+  const location = useLocation();
 
 const fetchData = () => {
   setLoading(true);
@@ -36,6 +38,12 @@ useEffect(() => {
   const delay = setTimeout(fetchData, 400);
   return () => clearTimeout(delay);
 }, [buscar]);
+
+useEffect(() => {
+  if (location.state?.filtro === "hoy") {
+    setFiltro("hoy");
+  }
+}, [location.state]);
 
   // 🟡 Loading (tu estilo)
   if (loading) {
@@ -106,8 +114,19 @@ const getTag = (tipo) => {
           </Typography>
 
           {data.resumen.sobrecarga && (
-            <Typography variant="body2" sx={{ mt: 1, fontWeight: "bold" }}>
-              ⚠️ Estás sobrecargado hoy. Considera reprogramar.
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              ⚠️ Estás sobrecargado hoy. Considera{" "}
+              <span
+                onClick={() => navigate("/hoy", { state: { filtro: "hoy" } })}
+                style={{
+                  color: "#D3AB80",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  fontWeight: "bold"
+                }}
+              >
+                reprogramar
+              </span>.
             </Typography>
           )}
         </Alert>

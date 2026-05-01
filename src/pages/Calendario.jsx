@@ -83,13 +83,14 @@ function Calendario() {
           }}
           eventClick={(info) => {
             const id = info.event.id;
+            const tipo = info.event.extendedProps.tipo;
 
-            if (id.startsWith("A")) {
+            if (tipo === "actividad") {
               navigate(`/actividad/${id.replace("A", "")}`);
             }
-            if (id.startsWith("S")) {
-              // también lleva a la actividad
-              navigate(`/actividad/${info.event.id.replace("S", "")}`);
+
+            if (tipo === "subtarea") {
+              console.log("ACTIVIDAD ID:", info.event.extendedProps.actividad_id);
             }
           }}
           height="75vh"

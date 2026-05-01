@@ -315,10 +315,11 @@ function ActividadDetalle() {
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: "1.1fr 0.9fr",
+              gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
               gap: 4,
               alignItems: "start",
               mt: 3,
+              width: "100%", // 🔥 importante
             }}
           >
           <Box sx={{
@@ -772,12 +773,15 @@ export default ActividadDetalle;
 const pageWrapper = {
   background: "#FFF4E2", // El color ahora va aquí
   minHeight: "100vh",    // Asegura que llegue hasta abajo
-  width: "100%",
+  overflowX: "hidden" 
 };
 
 const container = {
-  padding: "100px 2rem 2rem 2rem",
-  width: "100%",
+  maxWidth: "2300px",   // 🔥 clave
+  margin: "100px auto",
+  padding: "20px",
+  width: "100%",        // 🔥 importante
+  boxSizing: "border-box"
 };
 
 const header = {
