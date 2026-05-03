@@ -47,3 +47,16 @@ export const editarSubtarea = (id, data) =>
 export const toggleSubtarea = (id, completada) =>
   api.patch(`/api/subtareas/${id}/`, { completada });
 
+export const registrarAvance = (idSubtarea, data) => {
+  return fetch(
+    `https://planificador-estudios-backend-80p8.onrender.com/api/subtareas/${idSubtarea}/avance/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Token " + localStorage.getItem("token"),
+      },
+      body: JSON.stringify(data),
+    }
+  ).then(res => res.json());
+};
