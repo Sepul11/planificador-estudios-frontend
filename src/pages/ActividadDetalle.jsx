@@ -9,7 +9,8 @@ import {
   posponerActividad,
   editarActividad,
   eliminarActividad,
-  reprogramarActividad
+  reprogramarActividad,
+  registrarAvance
 } from "../services/actividadservice.js";
 import EditIcon from "@mui/icons-material/Edit";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -48,6 +49,12 @@ function ActividadDetalle() {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [cambios, setCambios] = useState({});
   const [errores, setErrores] = useState({});
+
+  const [openAvance, setOpenAvance] = useState(false);
+  const [subtareaSeleccionada, setSubtareaSeleccionada] = useState(null);
+  const [notaAvance, setNotaAvance] = useState("");
+  const [tipoAvance, setTipoAvance] = useState(""); // hecho | pospuesto
+
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -603,7 +610,11 @@ function ActividadDetalle() {
                     variant="contained"
                     color="success"
                     size="small"
-                    onClick={() => handleToggle(t)}
+                    onClick={() => {
+                      setSubtareaSeleccionada(t);
+                      setTipoAvance(t.completada ? "deshacer" : "hecho");
+                      setOpenAvance(true);
+                    }}
                   >
                     {t.completada ? "Deshacer" : "Completar"}
                   </Button>
@@ -756,6 +767,61 @@ function ActividadDetalle() {
       disabled={!nuevaFechaRepro}
     >
       Confirmar
+    </Button>
+  </DialogActions>
+</Dialog>
+<Dialog open={openAvance} maxWidth="sm" fullWidth>
+  <DialogTitle>
+    {tipoAvance === "hecho"
+      ? "Marcar como completado"
+      : tipoAvance === "pospuesto"
+      ? "Posponer subtarea"
+      : "Deshacer"}
+  </DialogTitle>
+
+  <DialogContent>
+    <TextField
+      fullWidth
+      multiline
+      rows={3}
+      label="Nota (opcional)"
+      value={notaAvance}
+      onChange={(e) => setNotaAvance(e.target.value)}
+      placeholder="Ej: avancé hasta la mitad..."
+    />
+  </DialogContent>
+
+  <DialogActions>
+    <Button
+      onClick={() => {
+        setOpenAvance(false);
+        setNotaAvance("");
+      }}
+    >
+      Cancelar
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={async () => {
+        try {
+          if (!subtareaSeleccionada) return;
+          await registrarAvance(subtareaSeleccionada.id, {
+            estado: tipoAvance,
+            nota: notaAvance,
+          });
+
+          setOpenAvance(false);
+          setNotaAvance("");
+          fetchActividad();
+
+          showSnack("Avance registrado 🔥");
+        } catch {
+          showSnack("Error registrando avance", "error");
+        }
+      }}
+    >
+      Guardar
     </Button>
   </DialogActions>
 </Dialog>

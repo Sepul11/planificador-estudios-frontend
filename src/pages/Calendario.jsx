@@ -82,15 +82,18 @@ function Calendario() {
             );
           }}
           eventClick={(info) => {
-            const id = info.event.id;
+            console.log(info.event.extendedProps); // 🔥 aquí
+
             const tipo = info.event.extendedProps.tipo;
 
             if (tipo === "actividad") {
-              navigate(`/actividad/${id.replace("A", "")}`);
+              const id = info.event.id.replace("A", "");
+              navigate(`/actividad/${id}`);
             }
 
             if (tipo === "subtarea") {
-              console.log("ACTIVIDAD ID:", info.event.extendedProps.actividad_id);
+              const actividadId = info.event.extendedProps.actividad_id;
+              navigate(`/actividad/${actividadId}`);
             }
           }}
           height="75vh"
