@@ -52,6 +52,7 @@ function ActividadDetalle() {
 
   const [openAvance, setOpenAvance] = useState(false);
   const [subtareaSeleccionada, setSubtareaSeleccionada] = useState(null);
+  const [openHistorial, setOpenHistorial] = useState(false);
   const [notaAvance, setNotaAvance] = useState("");
   const [tipoAvance, setTipoAvance] = useState(""); // hecho | pospuesto
 
@@ -60,6 +61,7 @@ function ActividadDetalle() {
     message: "",
     severity: "success",
   });
+
 
   const [confirmDelete, setConfirmDelete] = useState({
     open: false,
@@ -538,6 +540,45 @@ function ActividadDetalle() {
                   </Typography>
                 )}
 
+                {t.avances && t.avances.length > 0 && (
+                <Box sx={{ mt: 1 }}>
+                  {(() => {
+                    const ultimo = t.avances[t.avances.length - 1];
+
+                    const getColor = (estado) => {
+                      if (estado === "hecho") return "#2E7D32";
+                      if (estado === "pospuesto") return "#ED6C02";
+                      if (estado === "deshacer") return "#D32F2F";
+                    };
+
+                    return (
+                      <>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            color: getColor(ultimo.estado),
+                            fontWeight: 500
+                          }}
+                        >
+                          {ultimo.estado} — {ultimo.nota || "sin nota"}
+                        </Typography>
+
+                        <Button
+                          size="small"
+                          onClick={() => {
+                            setSubtareaSeleccionada(t);
+                            setOpenHistorial(true);
+                          }}
+                        >
+                          Ver historial
+                        </Button>
+                      </>
+                    );
+                  })()}
+                </Box>
+              )}
+
                 <Stack direction="row" spacing={2} mt={1}>
                   {modoEdicion ? (
                     <>
@@ -805,7 +846,6 @@ function ActividadDetalle() {
       variant="contained"
       onClick={async () => {
         try {
-          if (!subtareaSeleccionada) return;
           await registrarAvance(subtareaSeleccionada.id, {
             estado: tipoAvance,
             nota: notaAvance,
