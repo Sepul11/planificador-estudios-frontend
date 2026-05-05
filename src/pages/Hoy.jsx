@@ -3,10 +3,12 @@ import { getHoy } from "../services/actividadservice.js";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { completarSubtarea } from "../services/actividadservice.js";
+import { registrarAvance } from "../services/actividadservice.js";
 import {
   Card, CardContent, Typography, Chip,
   Button, Alert, Stack, ToggleButton, ToggleButtonGroup,
-  TextField, Box
+  TextField, Box,
+   Dialog, DialogTitle, DialogContent, DialogActions
 } from "@mui/material";
 import imgvacio from "../assets/imgvacio.png";
 import logo from "../assets/logo.png";
@@ -20,6 +22,10 @@ function Hoy() {
   const [buscar, setBuscar] = useState("");
   const [filtro, setFiltro] = useState("todas");
 
+  const [openAvance, setOpenAvance] = useState(false);
+  const [subtareaSeleccionada, setSubtareaSeleccionada] = useState(null);
+  const [tipoAvance, setTipoAvance] = useState("hecho");
+  const [notaAvance, setNotaAvance] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -165,39 +171,103 @@ const getTag = (tipo) => {
         </div>
       )}
 
-      {/* SECCIONES */}
-      <Seccion
-        titulo="Vencidas"
-        tipo="vencidas"
-        data={data.vencidas}
-        color="#E76F51"
-        navigate={navigate}
-        visible={filtro === "todas" || filtro === "vencidas"}
-        refresh={fetchData}
-        getTag={getTag}
-      />
+      <Box sx={columnsContainer}>
+        <Box sx={column}>
+          <Seccion
+            titulo="Vencidas"
+            tipo="vencidas"
+            data={data.vencidas}
+            color="#E76F51"
+            navigate={navigate}
+            visible={filtro === "todas" || filtro === "vencidas"}
+            refresh={fetchData}
+            getTag={getTag}
+            setSubtareaSeleccionada={setSubtareaSeleccionada}
+            setTipoAvance={setTipoAvance}
+            setOpenAvance={setOpenAvance}
+          />
+        </Box>
 
-      <Seccion
-        titulo="Para hoy"
-        tipo="hoy"
-        data={data.hoy}
-        color="#3A86FF"
-        navigate={navigate}
-        visible={filtro === "todas" || filtro === "hoy"}
-        refresh={fetchData}
-        getTag={getTag}
-      />
+        <Box sx={column}>
+          <Seccion
+            titulo="Para hoy"
+            tipo="hoy"
+            data={data.hoy}
+            color="#3A86FF"
+            navigate={navigate}
+            visible={filtro === "todas" || filtro === "hoy"}
+            refresh={fetchData}
+            getTag={getTag}
+            setSubtareaSeleccionada={setSubtareaSeleccionada}
+            setTipoAvance={setTipoAvance}
+            setOpenAvance={setOpenAvance}
+          />
+        </Box>
 
-      <Seccion
-        titulo="Próximas"
-        tipo="proximas"
-        data={data.proximas}
-        color="#2A9D8F"
-        navigate={navigate}
-        visible={filtro === "todas" || filtro === "proximas"}
-        refresh={fetchData}
-        getTag={getTag}
-      />
+        <Box sx={column}>
+          <Seccion
+            titulo="Próximas"
+            tipo="proximas"
+            data={data.proximas}
+            color="#2A9D8F"
+            navigate={navigate}
+            visible={filtro === "todas" || filtro === "proximas"}
+            refresh={fetchData}
+            getTag={getTag}
+            setSubtareaSeleccionada={setSubtareaSeleccionada}
+            setTipoAvance={setTipoAvance}
+            setOpenAvance={setOpenAvance}
+          />
+        </Box>
+      </Box>
+
+      <Dialog
+        open={openAvance}
+        onClose={() => setOpenAvance(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {tipoAvance === "hecho"
+            ? "Marcar como completado"
+            : tipoAvance === "pospuesto"
+            ? "Posponer subtarea"
+            : "Deshacer"}
+        </DialogTitle>
+
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Nota (opcional)"
+            value={notaAvance}
+            onChange={(e) => setNotaAvance(e.target.value)}
+          />
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpenAvance(false)}>
+            Cancelar
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={async () => {
+              await registrarAvance(subtareaSeleccionada.id, {
+                estado: tipoAvance,
+                nota: notaAvance,
+              });
+
+              setOpenAvance(false);
+              setNotaAvance("");
+              fetchData();
+            }}
+          >
+            Guardar
+          </Button>
+        </DialogActions>
+      </Dialog>      
 
       {/* FAB */}
       <button style={fab} onClick={() => navigate("/crear")}>
@@ -225,7 +295,7 @@ const agruparPorActividad = (subtareas) => {
   }, {});
 };
 
-function Seccion({ titulo, tipo, data, navigate, color, visible, refresh }) {
+function Seccion({ titulo, tipo, data, navigate, color, visible, refresh, setSubtareaSeleccionada, setTipoAvance, setOpenAvance }) {
   if (!visible) return null;
 
   const grupos = agruparPorActividad(data);
@@ -308,9 +378,10 @@ function Seccion({ titulo, tipo, data, navigate, color, visible, refresh }) {
                       variant="contained"
                       size="small"
                       sx={completeBtn}
-                      onClick={async () => {
-                        await completarSubtarea(t.id);
-                        refresh();
+                      onClick={() => {
+                        setSubtareaSeleccionada(t);
+                        setTipoAvance("hecho");
+                        setOpenAvance(true);
                       }}
                     >
                       Completar
@@ -318,7 +389,6 @@ function Seccion({ titulo, tipo, data, navigate, color, visible, refresh }) {
                   </Box>
                 </Box>
               ))}
-
             </CardContent>
           </Card>
         ))
@@ -532,4 +602,15 @@ const chipFecha = {
   background: "#E8F5E9",
   color: "#2E7D32",
   fontWeight: 600,
+};
+
+const columnsContainer = {
+  display: "flex",
+  gap: "20px",
+  alignItems: "flex-start",
+};
+
+const column = {
+  flex: 1,
+  minWidth: "300px",
 };
