@@ -855,13 +855,44 @@ function ActividadDetalle() {
           setNotaAvance("");
           fetchActividad();
 
-          showSnack("Avance registrado 🔥");
+          showSnack("Avance registrado ");
         } catch {
           showSnack("Error registrando avance", "error");
         }
       }}
     >
       Guardar
+    </Button>
+  </DialogActions>
+</Dialog>
+<Dialog open={openHistorial} maxWidth="sm" fullWidth>
+  <DialogTitle>Historial de avances</DialogTitle>
+
+  <DialogContent>
+    {subtareaSeleccionada?.avances?.length > 0 ? (
+      subtareaSeleccionada.avances.map((a, i) => (
+        <Box key={i} sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            {a.estado.toUpperCase()}
+          </Typography>
+
+          <Typography variant="body2">
+            {a.nota || "Sin nota"}
+          </Typography>
+
+          <Typography variant="caption" color="text.secondary">
+            {new Date(a.fecha).toLocaleString()}
+          </Typography>
+        </Box>
+      ))
+    ) : (
+      <Typography>No hay avances aún</Typography>
+    )}
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setOpenHistorial(false)}>
+      Cerrar
     </Button>
   </DialogActions>
 </Dialog>
