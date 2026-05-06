@@ -1,36 +1,13 @@
 // src/services/actividadService.js
-const handleError = (err) => {
-  const error = err.response?.data;
-
-  if (error?.sobrecarga) {
-    throw {
-      tipo: "sobrecarga",
-      data: error,
-    };
-  }
-
-  throw err;
-};
 
 import api from "../api/axios";
 
 export const getActividades = (params) => api.get("api/actividades/", { params });
 
-export const crearActividad = async (data) => {
-  try {
-    return await api.post("/api/actividades/", data);
-  } catch (err) {
-    handleError(err);
-  }
-};
+export const crearActividad = (data) => api.post("/api/actividades/", data);
 
-export const editarActividad = async (id, data) => {
-  try {
-    return await api.patch(`/api/actividades/${id}/`, data);
-  } catch (err) {
-    handleError(err);
-  }
-};
+export const editarActividad = (id, data) =>
+  api.patch(`/api/actividades/${id}/`, data);
 
 export const eliminarActividad = (id) =>
   api.delete(`/api/actividades/${id}/`);
@@ -62,21 +39,11 @@ export const completarSubtarea = (id) =>
 export const eliminarSubtarea = (id) =>
   api.delete(`/api/subtareas/${id}/`);
 
-export const crearSubtarea = async (data) => {
-  try {
-    return await api.post(`/api/subtareas/`, data);
-  } catch (err) {
-    handleError(err);
-  }
-};
+export const crearSubtarea = (data) =>
+  api.post(`/api/subtareas/`, data);
 
-export const editarSubtarea = async (id, data) => {
-  try {
-    return await api.patch(`/api/subtareas/${id}/`, data);
-  } catch (err) {
-    handleError(err);
-  }
-};
+export const editarSubtarea = (id, data) =>
+  api.patch(`/api/subtareas/${id}/`, data);
 
 export const toggleSubtarea = (id, completada) =>
   api.patch(`/api/subtareas/${id}/`, { completada });
