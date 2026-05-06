@@ -89,16 +89,12 @@ function ActividadDetalle() {
   }, []);
 
   const formatFecha = (fechaStr) => {
-    if (!fechaStr) return "";
-
-    const date = new Date(fechaStr);
-
-    if (isNaN(date)) return "";
+    const [year, month, day] = fechaStr.split("-");
+    const date = new Date(year, month - 1, day);
 
     return date.toLocaleDateString("es-CO", {
       day: "numeric",
       month: "short",
-      year: "numeric",
     });
   };
   const formatHoras = (h) => {
@@ -168,8 +164,28 @@ function ActividadDetalle() {
       setErrores({});
       fetchActividad();
       showSnack("Subtarea creada correctamente");
-    } catch {
-      showSnack("Error al crear subtarea", "error");
+    } catch (error) {
+      console.error(error);
+
+      if (error.response?.data) {
+        const data = error.response.data;
+
+        if (data.sobrecarga) {
+          showSnack(
+            `⚠️ ${data.mensaje}
+    Horas actuales: ${data.horas_actuales}h
+    Horas nuevas: ${data.horas_nuevas}h
+    Límite: ${data.limite}h
+    Exceso: ${data.exceso}h`,
+            "warning"
+          );
+        } else {
+          const errores = Object.values(data).flat().join(" ");
+          showSnack(errores, "error");
+        }
+      } else {
+        showSnack("Error conectando con el servidor", "error");
+      }
     }
   };
 
@@ -254,20 +270,44 @@ function ActividadDetalle() {
                 try {
                   // guardar subtareas correctamente
                   for (const idSub in cambios) {
-                    await editarSubtarea(idSub, cambios[idSub]);
+                    try {
+                      await editarSubtarea(idSub, cambios[idSub]);
+                    } catch (error) {
+                      if (error.response?.data?.sobrecarga) {
+                        const data = error.response.data;
+
+                        showSnack(
+                          `⚠️ ${data.mensaje}. Límite: ${data.limite}h, 
+                          actuales: ${data.horas_actuales}h, 
+                          nuevas: ${data.horas_nuevas}h`
+                        );
+
+                        return; 
+                      } else {
+                        showSnack("Error editando subtarea", "error");
+                        return;
+                      }
+                    }
                   }
 
                   // guardar actividad
-                  await editarActividad(id, actividadEdit);
-                  setActividad(actividadEdit);
-                  setCambios({});
-                  setModoEdicion(false);
-                  await fetchActividad();
-                  showSnack("Cambios guardados correctamente");
+                await editarActividad(id, actividadEdit);
 
-                } catch (error) {
+                setActividad(actividadEdit);
+                setCambios({});
+                setModoEdicion(false);
+                await fetchActividad();
+
+                showSnack("Cambios guardados correctamente", "success");
+
+              } catch (error) {
+                if (error.response?.data) {
+                  const errores = Object.values(error.response.data).flat().join(" ");
+                  showSnack(errores);
+                } else {
                   showSnack("Error guardando cambios", "error");
                 }
+              }
               }}
               >
                 Guardar cambios
