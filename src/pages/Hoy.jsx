@@ -123,7 +123,25 @@ const getTag = (tipo) => {
             <Typography variant="body2" sx={{ mt: 1 }}>
               ⚠️ Estás sobrecargado hoy. Considera{" "}
               <span
-                onClick={() => navigate("/hoy", { state: { filtro: "hoy" } })}
+                onClick={() => {
+                  // Verificamos que haya actividades hoy
+                  if (data.hoy && data.hoy.length > 0) {
+                    
+                    // Buscamos la actividad que tiene la mayor cantidad de horas
+                    // (Usamos reduce para comparar una por una y quedarnos con la más pesada)
+                    const actividadConflicto = data.hoy.reduce((prev, current) => 
+                      (prev.horas > current.horas) ? prev : current
+                    );
+
+                    console.log("Actividad de mayor impacto:", actividadConflicto);
+
+                    if (actividadConflicto.actividad) {
+                      navigate(`/actividad/${actividadConflicto.actividad}`);
+                    }
+                  } else {
+                    navigate("/actividades");
+                  }
+                }}
                 style={{
                   color: "#D3AB80",
                   cursor: "pointer",
@@ -132,7 +150,7 @@ const getTag = (tipo) => {
                 }}
               >
                 reprogramar
-              </span>.
+              </span>
             </Typography>
           )}
         </Alert>
@@ -355,7 +373,7 @@ function Seccion({ titulo, tipo, data, navigate, color, visible, refresh, setSub
                     startIcon={<VisibilityIcon />}
                     onClick={() => navigate(`/actividad/${grupo.actividad}`)}
                   >
-                    Ver
+                    Ver actividad
                   </Button>
                 </Stack>
 
