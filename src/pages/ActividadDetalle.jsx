@@ -275,16 +275,21 @@ function ActividadDetalle() {
                     try {
                       await editarSubtarea(idSub, cambios[idSub]);
                     } catch (error) {
-                      if (error.response?.data?.sobrecarga) {
-                        const data = error.response.data;
+                      console.error(error);
+
+                      if (error.response?.data?.tipo === "sobrecarga") {
+                        const info = error.response.data.data;
 
                         showSnack(
-                          `⚠️ ${data.mensaje}. Límite: ${data.limite}h, 
-                          actuales: ${data.horas_actuales}h, 
-                          nuevas: ${data.horas_nuevas}h`
+                          `⚠️ ${info.mensaje}
+                  Límite: ${info.limite}h
+                  Actuales: ${info.horas_actuales}h
+                  Nuevas: ${info.horas_nuevas}h
+                  Exceso: ${info.exceso}h`,
+                          "warning"
                         );
 
-                        return; 
+                        return; // 🔥 corta todo el proceso
                       } else {
                         showSnack("Error editando subtarea", "error");
                         return;
@@ -292,7 +297,7 @@ function ActividadDetalle() {
                     }
                   }
 
-                  // guardar actividad
+                // guardar actividad
                 await editarActividad(id, actividadEdit);
 
                 setActividad(actividadEdit);
@@ -303,13 +308,30 @@ function ActividadDetalle() {
                 showSnack("Cambios guardados correctamente", "success");
 
               } catch (error) {
-                if (error.response?.data) {
-                  const errores = Object.values(error.response.data).flat().join(" ");
-                  showSnack(errores);
-                } else {
-                  showSnack("Error guardando cambios", "error");
+                  console.error(error);
+
+                  if (error.response?.data) {
+                    const data = error.response.data;
+
+                    if (data.tipo === "sobrecarga") {
+                      const info = data.data;
+
+                      showSnack(
+                        `⚠️ ${info.mensaje}
+                Horas actuales: ${info.horas_actuales}h
+                Horas nuevas: ${info.horas_nuevas}h
+                Límite: ${info.limite}h
+                Exceso: ${info.exceso}h`,
+                        "warning"
+                      );
+                    } else {
+                      const errores = Object.values(data).flat().join(" ");
+                      showSnack(errores, "error");
+                    }
+                  } else {
+                    showSnack("Error guardando cambios", "error");
+                  }
                 }
-              }
               }}
               >
                 Guardar cambios
