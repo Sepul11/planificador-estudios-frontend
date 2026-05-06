@@ -141,34 +141,24 @@ function CrearActividad() {
         navigate(`/actividad/${res.data.id}`, {
           state: { mensaje: "Actividad creada con éxito ✅" }
         });
-      } catch (error) {
-          console.error(error);
+      }catch (error) {
+      if (error.response && error.response.data) {
+        const data = error.response.data;
+        
+        const mensajesDeError = Object.entries(data)
+          .map(([campo, mensajes]) => `${campo}: ${Array.isArray(mensajes) ? mensajes.join(", ") : mensajes}`)
+          .join(" | ");
 
-          if (error.response?.data) {
-            const data = error.response.data;
+        showSnack(mensajesDeError || "Error en los datos enviados", "error");
+        
+        setErrores(data);
 
-            if (data.tipo === "sobrecarga") {
-              const info = data.data;
-
-              showSnack(
-                `⚠️ ${info.mensaje}
-        Horas actuales: ${info.horas_actuales}h
-        Horas nuevas: ${info.horas_nuevas}h
-        Límite: ${info.limite}h
-        Exceso: ${info.exceso}h`,
-                "warning"
-              );
-            } else {
-              const errores = Object.values(data).flat().join(" ");
-              showSnack(errores);
-            }
-          } else {
-            showSnack("Error conectando con el servidor");
-          }
-        }finally {
+      } else {
+        showSnack("Error conectando con el servidor", "error");
+        console.error("Error completo:", error);
+      }}finally {
         setLoading(false);
       }
-
   }
   if (loading) {
     return (

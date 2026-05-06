@@ -50,6 +50,8 @@ function ActividadDetalle() {
   const [cambios, setCambios] = useState({});
   const [errores, setErrores] = useState({});
 
+  const [conflicto, setConflicto] = useState(null);
+
   const [openAvance, setOpenAvance] = useState(false);
   const [subtareaSeleccionada, setSubtareaSeleccionada] = useState(null);
   const [openHistorial, setOpenHistorial] = useState(false);
