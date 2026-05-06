@@ -145,8 +145,21 @@ function CrearActividad() {
           console.error(error);
 
           if (error.response?.data) {
-            const errores = Object.values(error.response.data).flat().join(" ");
-            showSnack(errores);
+            const data = error.response.data;
+
+            if (data.sobrecarga) {
+              showSnack(
+                `⚠️ ${data.mensaje}
+          Horas actuales: ${data.horas_actuales}h
+          Horas nuevas: ${data.horas_nuevas}h
+          Límite: ${data.limite}h
+          Exceso: ${data.exceso}h`,
+                "warning"
+              );
+            } else {
+              const errores = Object.values(data).flat().join(" ");
+              showSnack(errores);
+            }
           } else {
             showSnack("Error conectando con el servidor");
           }
