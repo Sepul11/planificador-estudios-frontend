@@ -170,16 +170,18 @@ function ActividadDetalle() {
       if (error.response?.data) {
         const data = error.response.data;
 
-        if (data.sobrecarga) {
+        if (data.tipo === "sobrecarga") {
+          const info = data.data;
+
           showSnack(
-            `⚠️ ${data.mensaje}
-    Horas actuales: ${data.horas_actuales}h
-    Horas nuevas: ${data.horas_nuevas}h
-    Límite: ${data.limite}h
-    Exceso: ${data.exceso}h`,
+            `⚠️ ${info.mensaje}
+        Horas actuales: ${info.horas_actuales}h
+        Horas nuevas: ${info.horas_nuevas}h
+        Límite: ${info.limite}h
+        Exceso: ${info.exceso}h`,
             "warning"
           );
-        } else {
+        }else {
           const errores = Object.values(data).flat().join(" ");
           showSnack(errores, "error");
         }
