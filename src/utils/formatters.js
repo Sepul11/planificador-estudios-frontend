@@ -1,13 +1,14 @@
-export function formatFecha(fechaStr) {
+export function formatFecha(fechaStr, conSemana = false) {
   if (!fechaStr) return "";
+  
+  const date = new Date(fechaStr + "T12:00:00");
 
-  const [year, month, day] = fechaStr.split("-");
-  const date = new Date(year, month - 1, day);
+  const opciones = conSemana
+    ? { weekday: "short", day: "numeric", month: "short" }
+    : { day: "numeric", month: "short" };
 
-  return date.toLocaleDateString("es-CO", {
-    day: "numeric",
-    month: "short",
-  });
+  const texto = date.toLocaleDateString("es-CO", opciones);
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 export function formatHoras(horas) {

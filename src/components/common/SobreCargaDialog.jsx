@@ -5,50 +5,66 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { updatePerfil } from "../../services/perfilService";
-
-// Formatea "2026-05-10" → "dom 10 may"
-function formatFecha(fechaStr) {
-  if (!fechaStr) return "";
-  const d = new Date(fechaStr + "T12:00:00"); // evita desfase UTC
-  return d.toLocaleDateString("es-CO", {
-    weekday: "short", day: "numeric", month: "short",
-  });
-}
+import { formatFecha, formatHoras } from "../../utils/formatters";
+import EventIcon from "@mui/icons-material/Event";
+import CallSplitIcon from "@mui/icons-material/CallSplit";
+import ContentCutIcon from "@mui/icons-material/ContentCut";
+import BuildIcon from "@mui/icons-material/Build";
+import InsightsIcon from "@mui/icons-material/Insights";
 
 const CONFIG = {
   mover_a_otro_dia: {
-    emoji: "📅",
+    icon: <EventIcon fontSize="small" />,
     color: "#e8f5e9",
     border: "#66bb6a",
+    titulo: (rec) =>
+      `Mover esta subtarea al ${formatFecha(rec.fecha_sugerida, true)}`,
     renderDetalle: (rec) =>
-      `${formatFecha(rec.fecha_sugerida)} tiene ${rec.horas_libres}h libres`,
+      `Ese día tienes ${formatHoras(rec.horas_libres)} disponibles en tu agenda.`,
   },
+
   dividir_en_dos_dias: {
-    emoji: "✂️📅",
+    icon: <CallSplitIcon fontSize="small" />,
     color: "#f3e5f5",
     border: "#ab47bc",
+    titulo: (rec) =>
+      `Dividir el estudio en dos días`,
     renderDetalle: (rec) =>
-      `${rec.parte_1.horas}h hoy + ${rec.parte_2.horas}h el ${formatFecha(rec.parte_2.fecha)}`,
+      `${formatHoras(rec.parte_1.horas)} hoy + ${formatHoras(
+        rec.parte_2.horas
+      )} el ${formatFecha(rec.parte_2.fecha, true)}.`,
   },
+
   reducir_horas: {
-    emoji: "✂️",
+    icon: <ContentCutIcon fontSize="small" />,
     color: "#fff3e0",
     border: "#ffa726",
+    titulo: (rec) =>
+      `Reducir las horas para que quepa hoy`,
     renderDetalle: (rec) =>
-      `"${rec.titulo}" — bajar de ${rec.horas_actuales}h a ${rec.sugerir_horas}h`,
+      `Bajar de ${formatHoras(rec.horas_actuales)} a ${formatHoras(
+        rec.sugerir_horas
+      )} permite cumplir tu límite diario.`,
   },
+
   aumentar_limite: {
-    emoji: "🔧",
+    icon: <BuildIcon fontSize="small" />,
     color: "#e3f2fd",
     border: "#42a5f5",
+    titulo: (rec) =>
+      `Aumentar tu límite diario`,
     renderDetalle: (rec) =>
-      `Subir tu límite diario a ${rec.sugerir_limite}h resolvería el conflicto`,
+      `Subir tu límite a ${formatHoras(
+        rec.sugerir_limite
+      )} resolvería este conflicto automáticamente.`,
   },
+
   vista_semana: {
-    emoji: "📊",
+    icon: <InsightsIcon fontSize="small" />,
     color: "#fafafa",
     border: "#bdbdbd",
-    renderDetalle: () => null, // tiene render propio abajo
+    titulo: () => `Próximos días con espacio disponible`,
+    renderDetalle: () => null,
   },
 };
 
@@ -59,22 +75,16 @@ export default function SobrecargaDialog({ sobrecarga, onClose, onLimiteActualiz
   if (!sobrecarga) return null;
 
   const { exceso, limite, horas_actuales, recomendaciones = [] } = sobrecarga;
+  const handleIrAResolver = (rec) => {
+    onClose();
 
-  const handleAumentarLimite = async (nuevoLimite) => {
-    setLoadingLimite(true);
-    try {
-      await updatePerfil({ limite_diario: nuevoLimite });
-      onLimiteActualizado?.();
-      onClose();
-    } catch {
-      // si falla, manda al perfil
+    if (rec.tipo === "aumentar_limite") {
       navigate("/perfil");
-    } finally {
-      setLoadingLimite(false);
+      return;
     }
-  };
-const handleAplicar = (rec) => {
-    onAplicarRecomendacion?.(rec);
+
+    // todas las demás implican editar la subtarea
+    navigate(`/actividad/${rec.actividad_id}`);
   };
 
   return (
@@ -85,9 +95,9 @@ const handleAplicar = (rec) => {
 
       <DialogContent>
         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
-          <Chip label={`Exceso: ${exceso}h`}          sx={{ background: "#fdecea", color: "#c62828" }} />
-          <Chip label={`Límite: ${limite}h`}           sx={{ background: "#fff3e0", color: "#e65100" }} />
-          <Chip label={`Actuales: ${horas_actuales}h`} sx={{ background: "#e8f5e9", color: "#2e7d32" }} />
+          <Chip label={`Exceso: ${exceso}`}          sx={{ background: "#fdecea", color: "#c62828" }} />
+          <Chip label={`Límite: ${limite}`}           sx={{ background: "#fff3e0", color: "#e65100" }} />
+          <Chip label={`Actuales: ${horas_actuales}`} sx={{ background: "#e8f5e9", color: "#2e7d32" }} />
         </Box>
 
         <Typography fontWeight="bold" mb={1}>💡 Qué puedes hacer:</Typography>
@@ -108,18 +118,21 @@ const handleAplicar = (rec) => {
                 }}
               >
                 {/* Botón aplicar recomendación */}
-                {rec.tipo !== "vista_semana" && rec.tipo !== "aumentar_limite" && (
+                {rec.tipo !== "vista_semana" && rec.tipo !== "aumentar_limite" &&(
                   <Button
                     size="small"
                     sx={{ mt: 1, textTransform: "none" }}
-                    onClick={() => handleAplicar(rec)}
+                    onClick={() => handleIrAResolver(rec)}
                   >
-                    Aplicar esta recomendación →
+                    Ir a resolver →
                   </Button>
                 )}
-                <Typography fontWeight="bold" fontSize="0.9rem">
-                  {cfg.emoji} {rec.razon}
-                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {cfg.icon}
+                  <Typography fontWeight="bold" fontSize="0.9rem">
+                    {cfg.titulo(rec)}
+                  </Typography>
+                </Box>
 
                 {/* Detalle estándar */}
                 {cfg.renderDetalle(rec) && (
@@ -135,7 +148,7 @@ const handleAplicar = (rec) => {
                       <Chip
                         key={j}
                         size="small"
-                        label={`${formatFecha(dia.fecha)} · ${dia.horas_libres}h`}
+                        label={`${formatFecha(dia.fecha, true)} · ${formatHoras(dia.horas_libres)}`}
                         sx={{
                           background: dia.cabe_completa ? "#e8f5e9" : "#fff8e1",
                           border: `1px solid ${dia.cabe_completa ? "#66bb6a" : "#ffca28"}`,
@@ -150,12 +163,10 @@ const handleAplicar = (rec) => {
                 {rec.tipo === "aumentar_limite" && (
                   <Button
                     size="small"
-                    disabled={loadingLimite}
                     sx={{ mt: 1, textTransform: "none" }}
-                    onClick={() => handleAumentarLimite(rec.sugerir_limite)}
-                    startIcon={loadingLimite ? <CircularProgress size={14} /> : null}
+                    onClick={() => handleIrAResolver(rec)}
                   >
-                    {loadingLimite ? "Guardando..." : `Aplicar límite de ${rec.sugerir_limite}h →`}
+                    Ir a mi perfil →
                   </Button>
                 )}
               </Box>

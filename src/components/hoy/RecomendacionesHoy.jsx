@@ -37,11 +37,59 @@ const CONFIG = {
   },
 };
 
+const construirMensaje = (rec) => {
+  switch (rec.tipo) {
+    case "urgente":
+      return `Tienes ${rec.cantidad} subtareas vencidas. Sugerido: ${rec.dia_sugerido ?? "revisar hoy"}.`;
+
+    case "sobrecarga":
+      return `Hoy tienes ${rec.exceso}h de sobrecarga. Puedes mover "${rec.candidata_mover?.titulo}" al ${rec.candidata_mover?.fecha_sugerida ?? "próximo día libre"}.`;
+
+    case "actividad_pesada":
+      return `La actividad "${rec.actividad_titulo}" tiene ${rec.horas_total}h pendientes y supera tu límite diario (${rec.limite}h).`;
+
+    case "espacio_libre":
+      return `Tienes días con buen espacio libre: ${rec.dias
+        .map((d) => d.fecha)
+        .join(", ")}.`;
+
+    default:
+      return "";
+  }
+};
+
 export default function RecomendacionesHoy({ recomendaciones = [] }) {
   const [abierto, setAbierto] = useState(false);
   const navigate = useNavigate();
+  const recomendacionesValidas = recomendaciones.filter((rec) => {
+    if (rec.tipo === "urgente") return rec.subtareas?.length > 0;
+    if (rec.tipo === "sobrecarga") return !!rec.candidata_mover;
+    if (rec.tipo === "actividad_pesada") return true;
+    if (rec.tipo === "espacio_libre") return rec.dias?.length > 0;
+    return false;
+  });
 
-  if (recomendaciones.length === 0) return null;
+  if (recomendacionesValidas.length === 0) {
+    return (
+      <Box
+        sx={{
+          mb: 2,
+          background: "#f9f9f9",
+          border: "1px dashed #ccc",
+          borderRadius: "12px",
+          p: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+        }}
+      >
+        <LightbulbIcon sx={{ color: "#bbb" }} />
+        <Typography fontSize="0.9rem" color="#666">
+          No tienes recomendaciones por ahora. Tu planificación está en equilibrio 👍
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ mb: 2 }}>
@@ -62,14 +110,14 @@ export default function RecomendacionesHoy({ recomendaciones = [] }) {
           mb: 1,
         }}
       >
-        {recomendaciones.length} recomendación
+        {recomendacionesValidas.length} recomendación
         {recomendaciones.length > 1 ? "es" : ""}
       </Button>
 
       {/* Panel */}
       <Collapse in={abierto}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          {recomendaciones.map((rec, i) => {
+          {recomendacionesValidas.map((rec, i) => {
             const cfg = CONFIG[rec.tipo] ?? CONFIG.espacio_libre;
 
             return (
@@ -87,7 +135,7 @@ export default function RecomendacionesHoy({ recomendaciones = [] }) {
                 }}
               >
                 <Typography sx={{ fontSize: "0.9rem" }}>
-                  {cfg.emoji} {rec.mensaje}
+                  {cfg.emoji} {construirMensaje(rec)}
                 </Typography>
 
                 {cfg.accion && (

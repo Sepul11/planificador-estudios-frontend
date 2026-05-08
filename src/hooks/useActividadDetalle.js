@@ -192,6 +192,7 @@ export const useActividadDetalle = () => {
             if (errorSobrecarga) {
                 setSobrecarga(errorSobrecarga); 
                 showSnackbar("Superarías tu límite diario al editar esa subtarea", "warning");
+                return;
             } else {
                 showSnackbar(mensajeError(data) || "Error editando subtarea", "error");
             }
@@ -206,13 +207,21 @@ export const useActividadDetalle = () => {
       await fetchRecomendaciones();
       showSnackbar("Cambios guardados correctamente", "success");
     } catch (error) {
-      if (error.response?.data) {
-        const msg = Object.values(error.response.data).flat().join(" ");
-        showSnackbar(msg, "error");
-      } else {
-        showSnackbar("Error guardando cambios", "error");
+        const data = error.response?.data;
+        if (!data) {
+          showSnackbar("Error guardando cambios", "error");
+          return;
+        }
+
+        const errorSobrecarga = detectarSobrecarga(data);
+
+        if (errorSobrecarga) {
+          setSobrecarga(errorSobrecarga);
+          showSnackbar("Superarías tu límite diario al editar la actividad", "warning");
+        } else {
+          showSnackbar(mensajeError(data), "error");
+        }
       }
-    }
   };
 
   // ═══════════════════════════════════════════
@@ -256,8 +265,14 @@ export const useActividadDetalle = () => {
       await fetchActividad();
       await fetchRecomendaciones();
       showSnackbar(`Movido al ${res.data.nueva_fecha} automáticamente`);
-    } catch {
-      showSnackbar("Error al posponer", "error");
+    } catch (error){
+        const data = error.response?.data;
+        const errorSobrecarga = detectarSobrecarga(data);
+
+        if (errorSobrecarga) {
+          setSobrecarga(errorSobrecarga);  // 🔥 ahora sí puede mostrar dialog
+          return;
+        }
     } finally {
       setLoadingPosponer(false);
     }
@@ -281,8 +296,14 @@ export const useActividadDetalle = () => {
         await fetchRecomendaciones();
         showSnackbar(`Actividad reprogramada correctamente`);
       }
-    } catch {
-      showSnackbar("Error al reprogramar", "error");
+    } catch (error){
+        const data = error.response?.data;
+        const errorSobrecarga = detectarSobrecarga(data);
+
+        if (errorSobrecarga) {
+          setSobrecarga(errorSobrecarga);  // 🔥 ahora sí puede mostrar dialog
+          return;
+        }
     }
   };
 
