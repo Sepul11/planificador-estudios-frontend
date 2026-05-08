@@ -20,6 +20,10 @@ function Navbar() {
       }
     }
     cargarPerfil();
+    window.addEventListener("perfilActualizado", cargarPerfil);
+
+    // 3. Limpiamos el event listener
+    return () => window.removeEventListener("perfilActualizado", cargarPerfil);
   }, []);
 
   // cerrar dropdown al hacer click afuera
