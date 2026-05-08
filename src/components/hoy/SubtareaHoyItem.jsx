@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
-import { hoyStyles as s } from "../../styles/hoyStyles";
-import { formatFecha, formatHoras } from "../../utils/formatters";
+import { hoyStyles as s } from "../../styles/hoyStyles.js";
+import { formatFecha, formatHoras } from "../../utils/formatters.js";
 
 export default function SubtareaHoyItem({ subtarea, abrirAvance }) {
   return (

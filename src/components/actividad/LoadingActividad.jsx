@@ -1,4 +1,4 @@
-import { actividadStyles } from "../../styles/actividadStyles";
+import { actividadStyles } from "../../styles/actividadStyles.js";
 const {
   loadingContainer,
   spinner,

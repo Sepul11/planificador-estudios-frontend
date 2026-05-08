@@ -3,9 +3,9 @@ import EventIcon from "@mui/icons-material/Event";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SchoolIcon from "@mui/icons-material/School";
 import CategoryIcon from "@mui/icons-material/Category";
-import { detalleStyles as s } from "../../styles/detalleStyles";
-import { formatFecha } from "../../utils/formatters";
-import ProgresoBar from "./ProgresoBar";
+import { detalleStyles as s } from "../../styles/detalleStyles.js";
+import { formatFecha } from "../../utils/formatters.js";
+import ProgresoBar from "./ProgresoBar.jsx";
 
 export default function ActividadInfo({
   actividad,

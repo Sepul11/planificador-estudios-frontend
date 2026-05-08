@@ -2,15 +2,15 @@ import { Box, Alert, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import imgvacio from "../assets/imgvacio.png";
 
-import { useHoy } from "../hooks/useHoy";
-import { hoyStyles as s } from "../styles/hoyStyles";
+import { useHoy } from "../hooks/useHoy.js";
+import { hoyStyles as s } from "../styles/hoyStyles.js";
 
-import HoyHeader        from "../components/hoy/HoyHeader";
-import ResumenDia       from "../components/hoy/ResumenDia";
-import FiltrosHoy       from "../components/hoy/FiltrosHoy";
-import SeccionSubtareas from "../components/hoy/SeccionSubtareas";
-import AvanceDialog     from "../components/hoy/AvanceDialog";
-import RecomendacionesHoy from "../components/hoy/RecomendacionesHoy";
+import HoyHeader        from "../components/hoy/HoyHeader.jsx";
+import ResumenDia       from "../components/hoy/ResumenDia.jsx";
+import FiltrosHoy       from "../components/hoy/FiltrosHoy.jsx";
+import SeccionSubtareas from "../components/hoy/SeccionSubtareas.jsx";
+import AvanceDialog     from "../components/hoy/AvanceDialog.jsx";
+import RecomendacionesHoy from "../components/hoy/RecomendacionesHoy.jsx";
 
 const SECCIONES = [
   { key: "vencidas", titulo: "Vencidas",   color: "#E76F51" },

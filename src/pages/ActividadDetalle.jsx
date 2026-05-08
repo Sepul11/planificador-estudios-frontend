@@ -2,17 +2,17 @@
 import { Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-import { useActividadDetalle } from "../hooks/useActividadDetalle";
-import { detalleStyles as s } from "../styles/detalleStyles";
+import { useActividadDetalle } from "../hooks/useActividadDetalle.js";
+import { detalleStyles as s } from "../styles/detalleStyles.js";
 
-import DetalleHeader       from "../components/detalle/DetalleHeader";
-import ActividadInfo       from "../components/detalle/ActividadInfo";
-import SubtareasList       from "../components/detalle/SubtareasList";
-import ReprogramarDialog   from "../components/detalle/ReprogramarDialog";
-import AvanceDetalleDialog from "../components/detalle/AvanceDetalleDialog";
-import HistorialDialog     from "../components/detalle/HistorialDialog";
-import RecomendacionesHoy  from "../components/hoy/RecomendacionesHoy";
-import SobrecargaDialog    from "../components/common/SobrecargaDialog";
+import DetalleHeader       from "../components/detalle/DetalleHeader.jsx";
+import ActividadInfo       from "../components/detalle/ActividadInfo.jsx";
+import SubtareasList       from "../components/detalle/SubtareasList.jsx";
+import ReprogramarDialog   from "../components/detalle/ReprogramarDialog.jsx";
+import AvanceDetalleDialog from "../components/detalle/AvanceDetalleDialog.jsx";
+import HistorialDialog     from "../components/detalle/HistorialDialog.jsx";
+import RecomendacionesHoy  from "../components/hoy/RecomendacionesHoy.jsx";
+import SobrecargaDialog    from "../components/common/SobreCargaDialog.jsx";
 
 import {
   Button, Dialog, DialogActions,

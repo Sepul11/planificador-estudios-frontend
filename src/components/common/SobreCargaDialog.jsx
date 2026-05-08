@@ -4,8 +4,8 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { updatePerfil } from "../../services/perfilService";
-import { formatFecha, formatHoras } from "../../utils/formatters";
+import { updatePerfil } from "../../services/perfilService.js";
+import { formatFecha, formatHoras } from "../../utils/formatters.js";
 import EventIcon from "@mui/icons-material/Event";
 import CallSplitIcon from "@mui/icons-material/CallSplit";
 import ContentCutIcon from "@mui/icons-material/ContentCut";

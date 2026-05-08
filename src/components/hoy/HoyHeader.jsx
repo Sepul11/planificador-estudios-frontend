@@ -1,4 +1,4 @@
-import { hoyStyles as s } from "../../styles/hoyStyles";
+import { hoyStyles as s } from "../../styles/hoyStyles.js";
 import logo from "../../assets/logo.png";
 
 export default function HoyHeader() {

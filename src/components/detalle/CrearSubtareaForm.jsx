@@ -1,5 +1,5 @@
 import { Button, Card, TextField } from "@mui/material";
-import { detalleStyles as s } from "../../styles/detalleStyles";
+import { detalleStyles as s } from "../../styles/detalleStyles.js";
 
 export default function CrearSubtareaForm({
   nuevoTitulo, setNuevoTitulo,

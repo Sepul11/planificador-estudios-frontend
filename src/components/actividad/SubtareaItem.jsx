@@ -1,6 +1,6 @@
 import { Box, Button, Chip, Typography } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { actividadStyles } from "../../styles/actividadStyles";
+import { actividadStyles } from "../../styles/actividadStyles.js";
 const {
   chip,
   subItem,

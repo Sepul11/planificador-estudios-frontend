@@ -1,8 +1,8 @@
 import { Typography } from "@mui/material";
 import imgvacio from "../../assets/imgvacio.png";
-import { detalleStyles as s } from "../../styles/detalleStyles";
-import SubtareaCard from "./SubtareaCard";
-import CrearSubtareaForm from "./CrearSubtareaForm";
+import { detalleStyles as s } from "../../styles/detalleStyles.js";
+import SubtareaCard from "./SubtareaCard.jsx";
+import CrearSubtareaForm from "./CrearSubtareaForm.jsx";
 
 export default function SubtareasList({
   actividad, actividadEdit, modoEdicion,

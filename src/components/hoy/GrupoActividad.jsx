@@ -1,9 +1,9 @@
 import { Box, Card, CardContent, Chip, Stack, Typography, Button } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ScheduleIcon from "@mui/icons-material/Schedule";
-import { hoyStyles as s } from "../../styles/hoyStyles";
-import { formatFecha } from "../../utils/formatters";
-import SubtareaHoyItem from "./SubtareaHoyItem";
+import { hoyStyles as s } from "../../styles/hoyStyles.js";
+import { formatFecha } from "../../utils/formatters.js";
+import SubtareaHoyItem from "./SubtareaHoyItem.jsx";
 
 export default function GrupoActividad({ grupo, tipo, navigate, abrirAvance }) {
   return (

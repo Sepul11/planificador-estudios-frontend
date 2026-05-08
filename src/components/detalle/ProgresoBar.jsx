@@ -1,4 +1,4 @@
-import { detalleStyles as s } from "../../styles/detalleStyles";
+import { detalleStyles as s } from "../../styles/detalleStyles.js";
 
 export default function ProgresoBar({ progreso }) {
   return (

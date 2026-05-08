@@ -1,8 +1,8 @@
-import { actividadStyles } from "../../styles/actividadStyles";
+import { actividadStyles } from "../../styles/actividadStyles.js";
 
-import ActividadFields from "./ActividadFields";
-import SubtareaForm from "./SubtareaForm";
-import SubtareaList from "./SubtareaList";
+import ActividadFields from "./ActividadFields.jsx";
+import SubtareaForm from "./SubtareaForm.jsx";
+import SubtareaList from "./SubtareaList.jsx";
 
 const {
   card,

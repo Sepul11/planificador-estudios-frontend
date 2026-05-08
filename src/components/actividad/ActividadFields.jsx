@@ -1,5 +1,5 @@
 import { TextField } from "@mui/material";
-import { actividadStyles } from "../../styles/actividadStyles";
+import { actividadStyles } from "../../styles/actividadStyles.js";
 const {
   muiInputSx,
   row,

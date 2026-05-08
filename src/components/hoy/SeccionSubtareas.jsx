@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material";
-import GrupoActividad from "./GrupoActividad";
+import GrupoActividad from "./GrupoActividad.jsx";
 
 const agruparPorActividad = (subtareas) =>
   subtareas.reduce((acc, t) => {

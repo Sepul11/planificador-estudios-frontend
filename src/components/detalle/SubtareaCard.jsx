@@ -3,8 +3,8 @@ import {
   IconButton, Stack, TextField, Typography,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { detalleStyles as s } from "../../styles/detalleStyles";
-import { formatFecha, formatHoras } from "../../utils/formatters";
+import { detalleStyles as s } from "../../styles/detalleStyles.js";
+import { formatFecha, formatHoras } from "../../utils/formatters.js";
 
 const colorAvance = {
   hecho:     "#2E7D32",

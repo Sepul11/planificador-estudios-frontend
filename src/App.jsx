@@ -1,11 +1,11 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/NavBar.jsx";
 
-import Menu from "./pages/Menu";
-import Hoy from "./pages/Hoy";
-import Crear from "./pages/CrearActividad";
-import ActividadDetalle from "./pages/ActividadDetalle";
-import Register from "./pages/Register";
+import Menu from "./pages/Menu.jsx";
+import Hoy from "./pages/Hoy.jsx";
+import Crear from "./pages/CrearActividad.jsx";
+import ActividadDetalle from "./pages/ActividadDetalle.jsx";
+import Register from "./pages/Register.jsx";
 import LandingLogin from "./pages/landing/LandingLogin.jsx";
 import Calendario from "./pages/Calendario";
 import Actividades from "./pages/Actividades.jsx";

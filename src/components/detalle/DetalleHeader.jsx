@@ -3,7 +3,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import EventIcon from "@mui/icons-material/Event";
-import { detalleStyles as s } from "../../styles/detalleStyles";
+import { detalleStyles as s } from "../../styles/detalleStyles.js";
 import logo from "../../assets/logo.png";
 
 export default function DetalleHeader({

@@ -1,8 +1,8 @@
-import { useActividadForm } from "../hooks/useActividadForm";
-import ActividadForm from "../components/actividad/ActividadForm";
-import LoadingActividad from "../components/actividad/LoadingActividad";
-import SobrecargaDialog from "../components/common/SobrecargaDialog";
-import { actividadStyles as styles } from "../styles/actividadStyles";
+import { useActividadForm } from "../hooks/useActividadForm.js";
+import ActividadForm from "../components/actividad/ActividadForm.jsx";
+import LoadingActividad from "../components/actividad/LoadingActividad.jsx";
+import SobrecargaDialog from "../components/common/SobreCargaDialog.jsx";
+import { actividadStyles as styles } from "../styles/actividadStyles.js";
 
 function CrearActividad() {
   const form = useActividadForm();

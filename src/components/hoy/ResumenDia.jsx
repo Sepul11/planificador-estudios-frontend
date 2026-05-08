@@ -1,5 +1,5 @@
 import { Alert, Typography } from "@mui/material";
-import { hoyStyles as s } from "../../styles/hoyStyles";
+import { hoyStyles as s } from "../../styles/hoyStyles.js";
 
 export default function ResumenDia({ resumen, navigate, subtareasHoy }) {
   if (!resumen || resumen.horas_hoy === 0) return null;

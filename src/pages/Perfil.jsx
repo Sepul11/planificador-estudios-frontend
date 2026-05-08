@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getPerfil, updatePerfil } from "../services/perfilService";
+import { getPerfil, updatePerfil } from "../services/perfilService.js";
 import { Snackbar, Alert } from "@mui/material"; // Añadimos Alert para que se vea mejor
 
 function Perfil() {

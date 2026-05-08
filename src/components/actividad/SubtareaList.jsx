@@ -1,4 +1,4 @@
-import SubtareaItem from "./SubtareaItem";
+import SubtareaItem from "./SubtareaItem.jsx";
 
 export default function SubtareaList({
   subtareas,

@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { hoyStyles as s } from "../../styles/hoyStyles";
+import { hoyStyles as s } from "../../styles/hoyStyles.js";
 
 const FILTROS = [
   { key: "todas",    label: "Todas",    color: "#3A2E2A" },
