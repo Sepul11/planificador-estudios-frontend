@@ -39,6 +39,7 @@ function Perfil() {
       const response = await updatePerfil({ limite_diario: horas });
       setPerfil(response); // Actualizamos el estado con la respuesta del servidor
       showSnack("¡Cambios guardados con éxito!");
+      window.dispatchEvent(new Event("perfilActualizado"));
     } catch (error) {
       showSnack("Error al actualizar el perfil", "error");
     }
